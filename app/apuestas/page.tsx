@@ -12,10 +12,12 @@ export default async function PartidosPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Partidos visibles (la RLS oculta los que están en estado 'oculto').
+  // Solo los partidos abiertos o ya jugados (el calendario completo está en
+  // Fixture). Los 'oculto' no se pueden apostar todavía.
   const { data: matchesData } = await supabase
     .from("matches")
     .select("*")
+    .neq("status", "oculto")
     .order("kickoff_at", { ascending: true });
   const matches = (matchesData ?? []) as Match[];
 

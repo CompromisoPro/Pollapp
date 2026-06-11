@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import PageHeader from "@/components/PageHeader";
 import { Flag } from "@/components/Flag";
@@ -72,6 +73,8 @@ export default async function FixturePage() {
 
 function FixtureRow({ match: m }: { match: Match }) {
   const finished = m.status === "finalizado" && m.home_score !== null;
+  // eslint-disable-next-line react-hooks/purity -- server component: hora del request
+  const locked = Date.now() >= new Date(m.lock_at).getTime();
 
   return (
     <div className="flex items-center gap-3 px-4 py-3">
@@ -98,6 +101,19 @@ function FixtureRow({ match: m }: { match: Match }) {
         <span className="flex-1 text-left font-semibold">
           <Flag team={m.away_team} /> {m.away_team}
         </span>
+      </div>
+
+      {/* Ver apuestas: solo cuando ya cerró el plazo */}
+      <div className="w-8 shrink-0 text-center">
+        {locked && (
+          <Link
+            href={`/partido/${m.id}`}
+            title="Ver apuestas de todos"
+            className="text-base hover:scale-110 inline-block"
+          >
+            👀
+          </Link>
+        )}
       </div>
     </div>
   );

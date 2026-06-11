@@ -139,15 +139,20 @@ create policy profiles_update_own on profiles for update to authenticated
 drop policy if exists teams_select on teams;
 create policy teams_select on teams for select to authenticated using (true);
 
--- PARTIDOS: se ven los que NO están ocultos (el admin ve todos vía service role)
+-- PARTIDOS: visibles para cualquier logueado (calendario completo en Fixture).
+-- La página de Apuestas filtra a los no-ocultos; el Fixture muestra todo.
 drop policy if exists matches_select on matches;
-create policy matches_select on matches for select to authenticated using (status <> 'oculto');
+create policy matches_select on matches for select to authenticated using (true);
 
 -- PRONÓSTICOS: cada uno ve los suyos; solo puede crear/editar si el partido está
 --              abierto y aún no llega la hora de cierre (anti-trampa, en la base).
 drop policy if exists pred_select_own on predictions;
 create policy pred_select_own on predictions for select to authenticated
   using (auth.uid() = user_id);
+-- Ver las apuestas de TODOS, pero solo de partidos cuyo plazo ya cerró.
+drop policy if exists pred_select_locked on predictions;
+create policy pred_select_locked on predictions for select to authenticated
+  using (exists (select 1 from matches m where m.id = match_id and now() >= m.lock_at));
 drop policy if exists pred_insert_own on predictions;
 create policy pred_insert_own on predictions for insert to authenticated
   with check (

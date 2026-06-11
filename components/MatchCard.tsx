@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useTransition } from "react";
 import type { MatchWithPrediction } from "@/lib/types";
 import { savePrediction } from "@/app/apuestas/actions";
@@ -136,6 +137,18 @@ export default function MatchCard({ match }: { match: MatchWithPrediction }) {
         >
           {msg}
         </p>
+      )}
+
+      {/* Ver apuestas de todos: solo cuando ya cerró el plazo */}
+      {isLocked && (
+        <div className="mt-3 border-t border-gray-100 pt-2 text-center">
+          <Link
+            href={`/partido/${match.id}`}
+            className="text-xs font-bold text-brand-600 hover:underline"
+          >
+            👀 Ver apuestas de todos
+          </Link>
+        </div>
       )}
     </div>
   );

@@ -27,6 +27,14 @@ export function scoreMatch(
   return 0;
 }
 
+/** Etiqueta de observación según los puntos de un pronóstico de marcador. */
+export function scoreLabel(points: number): string {
+  if (points >= 3) return "Exacto";
+  if (points === 2) return "Diferencia y ganador";
+  if (points === 1) return "Solo ganador";
+  return "Sin acierto";
+}
+
 export type BonusKind =
   | "number"
   | "team"
