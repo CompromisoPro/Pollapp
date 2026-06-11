@@ -344,6 +344,48 @@ export async function saveBonusOfficial(
 
 // ----------------------------- JUGADORES -----------------------------
 
+/**
+ * Califica MANUALMENTE una respuesta de bono (acertó = max_points, no = 0).
+ * Pensado para los bonos de texto libre (goleador, arquero, mejor jugador),
+ * donde el sistema no puede comparar automáticamente por la variación de nombres.
+ */
+export async function gradeBonusAnswer(
+  answerId: number,
+  correct: boolean
+): Promise<Result> {
+  try {
+    await requireAdmin();
+    const admin = createAdminClient();
+    const { data: ans } = await admin
+      .from("bonus_answers")
+      .select("question_id")
+      .eq("id", answerId)
+      .single();
+    if (!ans) return { error: "Respuesta no encontrada." };
+
+    const { data: q } = await admin
+      .from("bonus_questions")
+      .select("max_points")
+      .eq("id", ans.question_id)
+      .single();
+
+    const pts = correct ? q?.max_points ?? 0 : 0;
+    const { error } = await admin
+      .from("bonus_answers")
+      .update({ points: pts })
+      .eq("id", answerId);
+    if (error) return { error: error.message };
+
+    await recomputeAllTotals(admin);
+    revalidatePath("/admin");
+    revalidatePath("/bonos");
+    revalidatePath("/tabla");
+    return { ok: true };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
 export async function setPaid(userId: string, paid: boolean): Promise<Result> {
   try {
     await requireAdmin();
