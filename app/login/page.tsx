@@ -3,16 +3,34 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { LogoMark } from "@/components/Logo";
+import { buscarCorreoPorRut } from "@/app/login/actions";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
-  const [mode, setMode] = useState<"link" | "pass">("link");
+  const [rut, setRut] = useState("");
+  const [foundEmail, setFoundEmail] = useState("");
+  const [mode, setMode] = useState<"link" | "pass" | "forgot">("link");
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">(
     "idle"
   );
   const [errorMsg, setErrorMsg] = useState("");
+
+  async function handleForgot(e: React.FormEvent) {
+    e.preventDefault();
+    setStatus("sending");
+    setErrorMsg("");
+    setFoundEmail("");
+    const res = await buscarCorreoPorRut(rut);
+    if ("error" in res) {
+      setStatus("error");
+      setErrorMsg(res.error);
+    } else {
+      setStatus("idle");
+      setFoundEmail(res.email);
+    }
+  }
 
   async function handlePassword(e: React.FormEvent) {
     e.preventDefault();
@@ -87,6 +105,67 @@ export default function LoginPage() {
               Usar otro correo
             </button>
           </div>
+        ) : mode === "forgot" ? (
+          <form onSubmit={handleForgot} className="card p-6 space-y-4">
+            <div>
+              <label className="block text-sm font-semibold mb-1">Tu RUT</label>
+              <input
+                type="text"
+                required
+                value={rut}
+                onChange={(e) => setRut(e.target.value)}
+                placeholder="12.345.678-9"
+                className="field w-full px-3 py-2.5 text-sm"
+              />
+              <p className="text-xs text-gray-400 mt-1">
+                Con tu RUT te mostramos el correo con el que estás inscrito.
+              </p>
+            </div>
+
+            {status === "error" && (
+              <p className="text-sm text-red-600">{errorMsg}</p>
+            )}
+
+            {foundEmail ? (
+              <div className="rounded-lg bg-green-50 border border-green-200 p-3 text-sm">
+                <p className="text-gray-600">Tu correo registrado es:</p>
+                <p className="font-bold text-pitch break-all">{foundEmail}</p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEmail(foundEmail);
+                    setMode("pass");
+                    setFoundEmail("");
+                    setStatus("idle");
+                  }}
+                  className="btn btn-primary w-full py-2 text-xs mt-2"
+                >
+                  Usar este correo para entrar →
+                </button>
+              </div>
+            ) : (
+              <button
+                type="submit"
+                disabled={status === "sending"}
+                className="btn btn-primary w-full py-2.5 text-sm"
+              >
+                {status === "sending" ? "Buscando…" : "Ver mi correo"}
+              </button>
+            )}
+
+            <button
+              type="button"
+              onClick={() => {
+                setMode("link");
+                setStatus("idle");
+                setErrorMsg("");
+                setFoundEmail("");
+              }}
+              className="w-full text-xs text-brand-600 underline"
+            >
+              ← Volver
+            </button>
+          </form>
         ) : mode === "pass" ? (
           <form onSubmit={handlePassword} className="card p-6 space-y-4">
             <div>
@@ -124,6 +203,17 @@ export default function LoginPage() {
               className="btn btn-primary w-full py-2.5 text-sm"
             >
               {status === "sending" ? "Entrando…" : "Entrar"}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setMode("forgot");
+                setStatus("idle");
+                setErrorMsg("");
+              }}
+              className="w-full text-xs text-gray-400 underline"
+            >
+              ¿Olvidaste tu correo? Búscalo con tu RUT
             </button>
             <button
               type="button"
