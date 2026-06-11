@@ -7,10 +7,29 @@ import { LogoMark } from "@/components/Logo";
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
+  const [password, setPassword] = useState("");
+  const [mode, setMode] = useState<"link" | "pass">("link");
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">(
     "idle"
   );
   const [errorMsg, setErrorMsg] = useState("");
+
+  async function handlePassword(e: React.FormEvent) {
+    e.preventDefault();
+    setStatus("sending");
+    setErrorMsg("");
+    const supabase = createClient();
+    const { error } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password,
+    });
+    if (error) {
+      setStatus("error");
+      setErrorMsg(error.message);
+    } else {
+      window.location.assign("/partidos");
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -68,6 +87,56 @@ export default function LoginPage() {
               Usar otro correo
             </button>
           </div>
+        ) : mode === "pass" ? (
+          <form onSubmit={handlePassword} className="card p-6 space-y-4">
+            <div>
+              <label className="block text-sm font-semibold mb-1">
+                Tu correo
+              </label>
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="tucorreo@gmail.com"
+                className="field w-full px-3 py-2.5 text-sm"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold mb-1">
+                Contraseña
+              </label>
+              <input
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Tu contraseña"
+                className="field w-full px-3 py-2.5 text-sm"
+              />
+            </div>
+            {status === "error" && (
+              <p className="text-sm text-red-600">{errorMsg}</p>
+            )}
+            <button
+              type="submit"
+              disabled={status === "sending"}
+              className="btn btn-primary w-full py-2.5 text-sm"
+            >
+              {status === "sending" ? "Entrando…" : "Entrar"}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setMode("link");
+                setStatus("idle");
+                setErrorMsg("");
+              }}
+              className="w-full text-xs text-brand-600 underline"
+            >
+              ← Volver al link mágico
+            </button>
+          </form>
         ) : (
           <form onSubmit={handleSubmit} className="card p-6 space-y-4">
             <div>
@@ -115,6 +184,17 @@ export default function LoginPage() {
             <p className="text-xs text-gray-400 text-center">
               Sin contraseñas. Te llega un link al correo y entras con un clic.
             </p>
+            <button
+              type="button"
+              onClick={() => {
+                setMode("pass");
+                setStatus("idle");
+                setErrorMsg("");
+              }}
+              className="w-full text-xs text-gray-400 underline"
+            >
+              ¿Problemas con el link? Entrar con contraseña
+            </button>
           </form>
         )}
       </div>
