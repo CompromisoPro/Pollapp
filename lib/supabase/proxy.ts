@@ -41,8 +41,7 @@ export async function updateSession(request: NextRequest) {
     path === "/" ||
     path.startsWith("/login") ||
     path.startsWith("/auth") ||
-    path.startsWith("/reglas") ||
-    path.startsWith("/demo"); // vista previa con datos de ejemplo (temporal)
+    path.startsWith("/reglas");
 
   if (!user && !isPublic) {
     const url = request.nextUrl.clone();
