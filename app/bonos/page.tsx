@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import BonusCard from "@/components/BonusCard";
+import PageHeader from "@/components/PageHeader";
 import type { BonusQuestion, BonusAnswer, Team } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -38,10 +39,11 @@ export default async function BonosPage() {
 
   return (
     <main className="flex-1 mx-auto w-full max-w-3xl px-3 py-6">
-      <h1 className="text-2xl font-black mb-1">Bonos</h1>
-      <p className="text-sm text-gray-500 mb-6">
-        Pronósticos especiales por fase. Cada uno tiene su propia fecha de cierre.
-      </p>
+      <PageHeader
+        title="Bonos"
+        emoji="🎯"
+        subtitle="Pronósticos especiales por fase. Cada uno tiene su propia fecha de cierre."
+      />
 
       {questions.length === 0 ? (
         <div className="rounded-xl border border-dashed border-gray-300 p-10 text-center text-gray-400">

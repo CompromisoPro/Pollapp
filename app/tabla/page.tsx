@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import PageHeader from "@/components/PageHeader";
 import type { Profile } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -22,12 +23,13 @@ export default async function TablaPage() {
 
   return (
     <main className="flex-1 mx-auto w-full max-w-3xl px-3 py-6">
-      <h1 className="text-2xl font-black mb-1">Tabla de posiciones</h1>
-      <p className="text-sm text-gray-500 mb-6">
-        Ranking por puntaje acumulado (marcadores + bonos).
-      </p>
+      <PageHeader
+        title="Tabla de posiciones"
+        emoji="🏆"
+        subtitle="Ranking por puntaje acumulado (marcadores + bonos)."
+      />
 
-      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+      <div className="overflow-hidden card">
         <table className="w-full text-sm">
           <thead className="bg-gray-50 text-gray-500">
             <tr>

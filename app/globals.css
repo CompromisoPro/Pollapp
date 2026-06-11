@@ -1,26 +1,144 @@
 @import "tailwindcss";
 
+/* =====================================================================
+   POLLAPP — Sistema de diseño "Mundial 2026"
+   Paleta vibrante (índigo → violeta → fucsia) con dorado de trofeo y
+   verde cancha, inspirada en la identidad multicolor del Mundial 2026.
+   ===================================================================== */
+
+@theme {
+  /* Marca (índigo/violeta) */
+  --color-brand-50: #eef2ff;
+  --color-brand-100: #e0e7ff;
+  --color-brand-200: #c7d2fe;
+  --color-brand-400: #818cf8;
+  --color-brand-500: #6366f1;
+  --color-brand-600: #4f46e5;
+  --color-brand-700: #4338ca;
+  --color-brand-900: #312e81;
+
+  /* Acentos del torneo */
+  --color-gold: #f59e0b; /* trofeo / puntos */
+  --color-gold-dark: #b45309;
+  --color-pitch: #16a34a; /* cancha / aciertos */
+  --color-flame: #e4002b; /* rojo selección */
+  --color-cyan: #06b6d4;
+
+  /* Tinta base (azul noche) */
+  --color-ink: #0b1437;
+  --color-ink-soft: #1e293b;
+
+  --font-sans: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --grad-brand: linear-gradient(120deg, #4f46e5 0%, #7c3aed 50%, #db2777 100%);
+  --grad-night: linear-gradient(135deg, #0b1437 0%, #312e81 60%, #4f46e5 100%);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background:
+    radial-gradient(60rem 60rem at 110% -10%, rgba(99, 102, 241, 0.08), transparent 60%),
+    radial-gradient(50rem 50rem at -10% 10%, rgba(219, 39, 119, 0.06), transparent 55%),
+    #f6f7fb;
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- Utilidades de marca ---------- */
+.grad-brand {
+  background-image: var(--grad-brand);
+}
+.grad-night {
+  background-image: var(--grad-night);
+}
+.text-grad {
+  background-image: var(--grad-brand);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ---------- Tarjeta ---------- */
+.card {
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.07);
+  border-radius: 1rem;
+  box-shadow:
+    0 1px 2px rgba(11, 20, 55, 0.04),
+    0 8px 24px -16px rgba(11, 20, 55, 0.18);
+}
+
+/* ---------- Botones ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  font-weight: 600;
+  border-radius: 0.7rem;
+  transition: transform 0.06s ease, filter 0.15s ease, background 0.15s ease;
+  cursor: pointer;
+}
+.btn:active {
+  transform: translateY(1px);
+}
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.btn-primary {
+  background-image: var(--grad-brand);
+  color: #fff;
+  box-shadow: 0 8px 20px -10px rgba(79, 70, 229, 0.7);
+}
+.btn-primary:hover:not(:disabled) {
+  filter: brightness(1.07);
+}
+.btn-success {
+  background-color: var(--color-pitch);
+  color: #fff;
+}
+.btn-success:hover:not(:disabled) {
+  filter: brightness(1.07);
+}
+.btn-ghost {
+  background: #fff;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  color: var(--color-ink-soft);
+}
+.btn-ghost:hover:not(:disabled) {
+  background: #f8fafc;
+}
+
+/* ---------- Inputs ---------- */
+.field {
+  border: 1px solid rgba(15, 23, 42, 0.15);
+  border-radius: 0.6rem;
+  background: #fff;
+  outline: none;
+}
+.field:focus {
+  border-color: var(--color-brand-500);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+}
+
+/* ---------- Píldoras ---------- */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 0.1rem 0.55rem;
+}
+.pill-gold {
+  background: rgba(245, 158, 11, 0.15);
+  color: var(--color-gold-dark);
+}
+.pill-pitch {
+  background: rgba(22, 163, 74, 0.14);
+  color: #15803d;
 }

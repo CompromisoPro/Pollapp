@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import type { BonusQuestion, BonusAnswer, Team } from "@/lib/types";
 import { saveBonusAnswer } from "@/app/bonos/actions";
 import { formatCl } from "@/lib/time";
+import { useNow } from "@/lib/useNow";
 
 export default function BonusCard({
   question,
@@ -26,7 +27,8 @@ export default function BonusCard({
   const [msg, setMsg] = useState("");
   const [pending, startTransition] = useTransition();
 
-  const isLocked = Date.now() >= new Date(question.deadline).getTime();
+  const nowMs = useNow();
+  const isLocked = nowMs !== 0 && nowMs >= new Date(question.deadline).getTime();
   const groupTeams =
     question.kind === "qualifiers"
       ? teams.filter((t) => t.group_label === question.group_label)
@@ -49,17 +51,15 @@ export default function BonusCard({
   }
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-4">
+    <div className="card p-4">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h3 className="font-semibold text-sm">{question.title}</h3>
+          <h3 className="font-bold text-sm">{question.title}</h3>
           {question.description && (
             <p className="text-xs text-gray-500 mt-0.5">{question.description}</p>
           )}
         </div>
-        <span className="shrink-0 rounded-full bg-amber-100 text-amber-700 text-xs font-bold px-2 py-0.5">
-          {question.max_points} pts
-        </span>
+        <span className="pill pill-gold shrink-0">🏅 {question.max_points} pts</span>
       </div>
 
       <div className="mt-3">
@@ -70,7 +70,7 @@ export default function BonusCard({
             disabled={isLocked || pending}
             onChange={(e) => setSingle(e.target.value)}
             placeholder="Número"
-            className="w-28 rounded-lg border border-gray-300 px-3 py-1.5 text-sm disabled:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="field w-28 px-3 py-1.5 text-sm disabled:bg-gray-100"
           />
         )}
 
@@ -81,7 +81,7 @@ export default function BonusCard({
             disabled={isLocked || pending}
             onChange={(e) => setSingle(e.target.value)}
             placeholder='Nombre del jugador (o "NADIE")'
-            className="w-full rounded-lg border border-gray-300 px-3 py-1.5 text-sm disabled:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="field w-full px-3 py-1.5 text-sm disabled:bg-gray-100"
           />
         )}
 
@@ -120,9 +120,7 @@ export default function BonusCard({
             <>Cierra: {formatCl(question.deadline)} hrs</>
           )}
           {answer?.points != null && (
-            <span className="ml-2 rounded-full bg-green-100 text-green-700 px-2 py-0.5 font-bold">
-              +{answer.points} pts
-            </span>
+            <span className="ml-2 pill pill-pitch">+{answer.points} pts</span>
           )}
         </span>
 
@@ -130,7 +128,7 @@ export default function BonusCard({
           <button
             onClick={onSave}
             disabled={pending}
-            className="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
+            className="btn btn-primary px-3 py-1.5 text-xs"
           >
             {pending ? "Guardando…" : answer ? "Actualizar" : "Guardar"}
           </button>
@@ -173,7 +171,7 @@ function TeamSelect({
       value={value}
       disabled={disabled}
       onChange={(e) => onChange(e.target.value)}
-      className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm disabled:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+      className="field px-3 py-1.5 text-sm disabled:bg-gray-100"
     >
       <option value="">— Elegir —</option>
       {teams.map((t) => (

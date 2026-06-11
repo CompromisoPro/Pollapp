@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import type { MatchWithPrediction } from "@/lib/types";
 import { savePrediction } from "@/app/partidos/actions";
 import { formatCl } from "@/lib/time";
+import { useNow } from "@/lib/useNow";
 
 export default function MatchCard({ match }: { match: MatchWithPrediction }) {
   const pred = match.prediction;
@@ -16,10 +17,12 @@ export default function MatchCard({ match }: { match: MatchWithPrediction }) {
   const [msg, setMsg] = useState<string>("");
   const [pending, startTransition] = useTransition();
 
-  const now = Date.now();
+  // "Ahora" del cliente, refrescado cada 30s para cerrar el partido al llegar la hora.
+  const nowMs = useNow();
   const lockMs = new Date(match.lock_at).getTime();
   const isFinished = match.status === "finalizado";
-  const isLocked = isFinished || match.status !== "abierto" || now >= lockMs;
+  const isLocked =
+    isFinished || match.status !== "abierto" || (nowMs !== 0 && nowMs >= lockMs);
 
   function onSave() {
     const h = parseInt(home, 10);
@@ -36,9 +39,9 @@ export default function MatchCard({ match }: { match: MatchWithPrediction }) {
   }
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-4">
+    <div className="card p-4">
       <div className="flex items-center justify-between mb-3">
-        <span className="text-xs font-semibold uppercase tracking-wide text-gray-400">
+        <span className="text-xs font-bold uppercase tracking-wide text-brand-600">
           {phaseLabel(match.phase)}
         </span>
         <span className="text-xs text-gray-500">
@@ -74,10 +77,8 @@ export default function MatchCard({ match }: { match: MatchWithPrediction }) {
           </span>
           {pred && (
             <span
-              className={`ml-2 inline-block rounded-full px-2 py-0.5 text-xs font-bold ${
-                (pred.points ?? 0) > 0
-                  ? "bg-green-100 text-green-700"
-                  : "bg-gray-100 text-gray-500"
+              className={`ml-2 pill ${
+                (pred.points ?? 0) > 0 ? "pill-pitch" : "bg-gray-100 text-gray-500"
               }`}
             >
               +{pred.points ?? 0} pts
@@ -101,7 +102,7 @@ export default function MatchCard({ match }: { match: MatchWithPrediction }) {
             <button
               onClick={onSave}
               disabled={pending}
-              className="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
+              className="btn btn-primary px-3 py-1.5 text-xs"
             >
               {pending ? "Guardando…" : pred ? "Actualizar" : "Guardar"}
             </button>
@@ -140,7 +141,7 @@ function ScoreBox({
       value={value}
       disabled={disabled}
       onChange={(e) => onChange(e.target.value)}
-      className="w-12 rounded-lg border border-gray-300 text-center py-1.5 text-lg font-bold disabled:bg-gray-100 disabled:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+      className="field w-12 text-center py-1.5 text-lg font-extrabold disabled:bg-gray-100 disabled:text-gray-500"
     />
   );
 }
