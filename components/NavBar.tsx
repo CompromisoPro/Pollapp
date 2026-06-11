@@ -9,6 +9,7 @@ const LINKS = [
   ["/grupos", "Grupos", "📊"],
   ["/bonos", "Bonos", "🎯"],
   ["/tabla", "Tabla", "🏆"],
+  ["/seguimiento", "Seguimiento", "📈"],
 ] as const;
 
 export default function NavBar({

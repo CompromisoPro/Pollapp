@@ -5,6 +5,7 @@ import type { MatchWithPrediction } from "@/lib/types";
 import { savePrediction } from "@/app/partidos/actions";
 import { formatCl } from "@/lib/time";
 import { useNow } from "@/lib/useNow";
+import { flagFor } from "@/lib/flags";
 
 export default function MatchCard({ match }: { match: MatchWithPrediction }) {
   const pred = match.prediction;
@@ -50,7 +51,9 @@ export default function MatchCard({ match }: { match: MatchWithPrediction }) {
       </div>
 
       <div className="flex items-center justify-center gap-3">
-        <span className="flex-1 text-right font-semibold">{match.home_team}</span>
+        <span className="flex-1 text-right font-semibold">
+          {match.home_team} {flagFor(match.home_team)}
+        </span>
 
         <div className="flex items-center gap-1.5">
           <ScoreBox
@@ -66,7 +69,9 @@ export default function MatchCard({ match }: { match: MatchWithPrediction }) {
           />
         </div>
 
-        <span className="flex-1 text-left font-semibold">{match.away_team}</span>
+        <span className="flex-1 text-left font-semibold">
+          {flagFor(match.away_team)} {match.away_team}
+        </span>
       </div>
 
       {/* Resultado oficial + puntos cuando el partido terminó */}
