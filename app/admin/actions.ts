@@ -138,7 +138,7 @@ export async function createMatch(formData: FormData): Promise<Result> {
     if (error) return { error: error.message };
 
     revalidatePath("/admin");
-    revalidatePath("/partidos");
+    revalidatePath("/apuestas");
     return { ok: true };
   } catch (e) {
     return fail(e);
@@ -158,7 +158,7 @@ export async function setMatchStatus(
       .eq("id", matchId);
     if (error) return { error: error.message };
     revalidatePath("/admin");
-    revalidatePath("/partidos");
+    revalidatePath("/apuestas");
     return { ok: true };
   } catch (e) {
     return fail(e);
@@ -173,7 +173,7 @@ export async function deleteMatch(matchId: number): Promise<Result> {
     if (error) return { error: error.message };
     await recomputeAllTotals(admin);
     revalidatePath("/admin");
-    revalidatePath("/partidos");
+    revalidatePath("/apuestas");
     return { ok: true };
   } catch (e) {
     return fail(e);
@@ -240,7 +240,7 @@ export async function saveMatchResult(
 
     await recomputeAllTotals(admin);
     revalidatePath("/admin");
-    revalidatePath("/partidos");
+    revalidatePath("/apuestas");
     revalidatePath("/tabla");
     revalidatePath("/grupos");
     revalidatePath("/bonos");

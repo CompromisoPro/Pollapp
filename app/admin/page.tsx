@@ -16,7 +16,7 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminPage() {
   const profile = await getProfile();
-  if (!profile?.is_admin) redirect("/partidos");
+  if (!profile?.is_admin) redirect("/apuestas");
 
   // Lectura con service role: el admin ve TODO (incluso partidos ocultos).
   const admin = createAdminClient();

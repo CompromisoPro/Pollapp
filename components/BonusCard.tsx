@@ -62,7 +62,8 @@ export default function BonusCard({
   }
 
   function onSave() {
-    setMsg("");
+    // Optimista: confirmamos de inmediato; el server revalida en segundo plano.
+    setMsg("✓ Guardado");
     startTransition(async () => {
       const res = await saveBonusAnswer(question.id, buildAnswer());
       setMsg("error" in res ? res.error : "✓ Guardado");

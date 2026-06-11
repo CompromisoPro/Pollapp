@@ -45,7 +45,7 @@ export default function LoginPage() {
       setStatus("error");
       setErrorMsg(error.message);
     } else {
-      window.location.assign("/partidos");
+      window.location.assign("/apuestas");
     }
   }
 

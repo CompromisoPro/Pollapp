@@ -49,6 +49,6 @@ export async function savePrediction(
     };
   }
 
-  revalidatePath("/partidos");
+  revalidatePath("/apuestas");
   return { ok: true };
 }
