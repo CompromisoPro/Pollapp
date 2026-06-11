@@ -56,6 +56,12 @@ export default function MatchAdmin({ matches }: { matches: Match[] }) {
           ))}
         </select>
         <input
+          name="group_label"
+          placeholder="Grupo (A-L, opcional)"
+          maxLength={1}
+          className="rounded-lg border border-gray-300 px-2 py-1.5 text-sm uppercase"
+        />
+        <input
           name="home_team"
           placeholder="Local (ej. Chile)"
           className="rounded-lg border border-gray-300 px-2 py-1.5 text-sm"

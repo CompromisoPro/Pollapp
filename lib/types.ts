@@ -30,6 +30,7 @@ export interface Team {
 export interface Match {
   id: number;
   phase: Phase;
+  group_label: string | null;
   home_team: string;
   away_team: string;
   kickoff_at: string;

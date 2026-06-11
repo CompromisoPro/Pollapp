@@ -52,6 +52,7 @@ create table if not exists teams (
 create table if not exists matches (
   id          bigint generated always as identity primary key,
   phase       text not null default 'grupos', -- grupos | dieciseisavos | octavos | cuartos | semis | tercer | final
+  group_label text,                            -- 'A'..'L' (solo fase de grupos)
   home_team   text not null,                  -- nombre o etiqueta (ej. 'Chile' o 'Ganador Grupo A')
   away_team   text not null,
   kickoff_at  timestamptz not null,           -- fecha/hora del partido (UTC)

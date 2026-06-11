@@ -5,6 +5,7 @@ import { requireAdmin } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { scoreMatch, scoreBonus, type BonusKind } from "@/lib/scoring";
 import { computeLockAt, santiagoWallToUtc } from "@/lib/time";
+import { computeStandings, type MatchResult } from "@/lib/standings";
 
 type Result = { ok: true } | { error: string };
 
@@ -35,6 +36,74 @@ async function recomputeAllTotals(admin: ReturnType<typeof createAdminClient>) {
   );
 }
 
+/**
+ * Si todos los partidos de un grupo están finalizados, calcula la tabla y
+ * fija automáticamente los 2 clasificados como respuesta oficial del bono
+ * `grupo_X`, calificando las respuestas de los jugadores. NO sobrescribe si el
+ * admin ya cargó una respuesta oficial a mano (override manual).
+ */
+async function autoGradeGroupIfComplete(
+  admin: ReturnType<typeof createAdminClient>,
+  group: string
+) {
+  const [{ data: teams }, { data: gm }, { data: q }] = await Promise.all([
+    admin.from("teams").select("id, name").eq("group_label", group),
+    admin
+      .from("matches")
+      .select("home_team, away_team, home_score, away_score, status")
+      .eq("phase", "grupos")
+      .eq("group_label", group),
+    admin
+      .from("bonus_questions")
+      .select("id, official_answer, max_points")
+      .eq("id", `grupo_${group}`)
+      .maybeSingle(),
+  ]);
+
+  if (!q || q.official_answer != null) return; // no existe el bono o ya está definido
+  const all = gm ?? [];
+  if (all.length === 0 || all.some((x) => x.status !== "finalizado")) return; // grupo incompleto
+
+  const finished: MatchResult[] = all
+    .filter((x) => x.home_score != null && x.away_score != null)
+    .map((x) => ({
+      home_team: x.home_team,
+      away_team: x.away_team,
+      home_score: x.home_score as number,
+      away_score: x.away_score as number,
+    }));
+
+  const names = (teams ?? []).map((t) => t.name);
+  const standings = computeStandings(names, finished);
+  const nameToId = new Map((teams ?? []).map((t) => [t.name, t.id]));
+  const top2 = standings
+    .slice(0, 2)
+    .map((s) => nameToId.get(s.team))
+    .filter((x): x is string => Boolean(x));
+  if (top2.length < 2) return;
+
+  await admin
+    .from("bonus_questions")
+    .update({ official_answer: top2 })
+    .eq("id", q.id);
+
+  const { data: answers } = await admin
+    .from("bonus_answers")
+    .select("id, answer")
+    .eq("question_id", q.id);
+
+  await Promise.all(
+    (answers ?? []).map((a) =>
+      admin
+        .from("bonus_answers")
+        .update({
+          points: scoreBonus("qualifiers", q.max_points, top2, a.answer),
+        })
+        .eq("id", a.id)
+    )
+  );
+}
+
 // ----------------------------- PARTIDOS -----------------------------
 
 /** Crea un partido. kickoffLocal viene de un <input datetime-local> (hora Chile). */
@@ -42,6 +111,8 @@ export async function createMatch(formData: FormData): Promise<Result> {
   try {
     await requireAdmin();
     const phase = String(formData.get("phase") || "grupos");
+    const groupLabel =
+      String(formData.get("group_label") || "").trim().toUpperCase() || null;
     const home = String(formData.get("home_team") || "").trim();
     const away = String(formData.get("away_team") || "").trim();
     const kickoffLocal = String(formData.get("kickoff") || ""); // "2026-06-19T16:00"
@@ -57,6 +128,7 @@ export async function createMatch(formData: FormData): Promise<Result> {
     const admin = createAdminClient();
     const { error } = await admin.from("matches").insert({
       phase,
+      group_label: groupLabel,
       home_team: home,
       away_team: away,
       kickoff_at: kickoffUtc.toISOString(),
@@ -156,10 +228,22 @@ export async function saveMatchResult(
       )
     );
 
+    // Si es de fase de grupos y el grupo quedó completo, auto-calificar el bono.
+    const { data: m } = await admin
+      .from("matches")
+      .select("phase, group_label")
+      .eq("id", matchId)
+      .single();
+    if (m?.phase === "grupos" && m.group_label) {
+      await autoGradeGroupIfComplete(admin, m.group_label);
+    }
+
     await recomputeAllTotals(admin);
     revalidatePath("/admin");
     revalidatePath("/partidos");
     revalidatePath("/tabla");
+    revalidatePath("/grupos");
+    revalidatePath("/bonos");
     return { ok: true };
   } catch (e) {
     return fail(e);

@@ -6,6 +6,7 @@ import { Logo } from "@/components/Logo";
 
 const LINKS = [
   ["/partidos", "Partidos", "⚽"],
+  ["/grupos", "Grupos", "📊"],
   ["/bonos", "Bonos", "🎯"],
   ["/tabla", "Tabla", "🏆"],
 ] as const;
