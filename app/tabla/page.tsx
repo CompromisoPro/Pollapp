@@ -13,6 +13,7 @@ export default async function TablaPage() {
   const { data } = await supabase
     .from("profiles")
     .select("id, full_name, points_total, paid")
+    .eq("is_admin", false) // los administradores no participan en la tabla
     .order("points_total", { ascending: false })
     .order("full_name", { ascending: true });
 
