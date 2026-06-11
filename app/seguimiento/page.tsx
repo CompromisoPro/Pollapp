@@ -2,7 +2,13 @@ import { createClient } from "@/lib/supabase/server";
 import PageHeader from "@/components/PageHeader";
 import { flagFor } from "@/lib/flags";
 import { formatCl } from "@/lib/time";
-import type { Match, Prediction, BonusQuestion, BonusAnswer } from "@/lib/types";
+import type {
+  Match,
+  Prediction,
+  BonusQuestion,
+  BonusAnswer,
+  Team,
+} from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -60,6 +66,12 @@ export default async function SeguimientoPage() {
     .eq("user_id", user!.id);
   const ansByQ = new Map<string, BonusAnswer>();
   for (const a of (bonusAData ?? []) as BonusAnswer[]) ansByQ.set(a.question_id, a);
+
+  // Para traducir ids de equipo ('CHI') a nombres en las apuestas de bonos.
+  const { data: teamsData } = await supabase.from("teams").select("id, name");
+  const teamName = new Map(
+    ((teamsData ?? []) as Pick<Team, "id" | "name">[]).map((t) => [t.id, t.name])
+  );
 
   // --- Construir línea de tiempo ---
   const items: TimelineItem[] = [];
@@ -164,12 +176,12 @@ export default async function SeguimientoPage() {
                       <p className="text-sm text-gray-500 mt-1">
                         Tú:{" "}
                         <strong className="text-gray-700">
-                          {fmtAnswer(it.myAnswer)}
+                          {fmtAnswer(it.myAnswer, teamName)}
                         </strong>
                         <span className="mx-1.5 text-gray-300">·</span>
                         Oficial:{" "}
                         <strong className="text-gray-700">
-                          {fmtAnswer(it.officialAnswer)}
+                          {fmtAnswer(it.officialAnswer, teamName)}
                         </strong>
                       </p>
                     </>
@@ -200,13 +212,16 @@ export default async function SeguimientoPage() {
   );
 }
 
-/** Muestra la respuesta de un bono (jsonb) de forma legible: escalar o lista. */
-function fmtAnswer(v: unknown): string {
+/**
+ * Muestra la respuesta de un bono (jsonb) legible: escalar o lista. Si el valor
+ * coincide con un id de equipo, lo traduce a su nombre.
+ */
+function fmtAnswer(v: unknown, teamName: Map<string, string>): string {
   if (v === null || v === undefined || v === "") return "—";
   if (Array.isArray(v)) {
-    return v.map((x) => fmtAnswer(x)).join(", ");
+    return v.map((x) => fmtAnswer(x, teamName)).join(", ");
   }
-  return String(v);
+  return teamName.get(String(v)) ?? String(v);
 }
 
 function phaseLabel(phase: string): string {
