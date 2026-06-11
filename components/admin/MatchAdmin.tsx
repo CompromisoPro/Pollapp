@@ -38,12 +38,67 @@ export default function MatchAdmin({ matches }: { matches: Match[] }) {
     });
   }
 
+  // Secciones: Grupo A..L y luego cada fase eliminatoria.
+  const sections: { title: string; items: Match[] }[] = [];
+  for (const g of "ABCDEFGHIJKL") {
+    const items = matches.filter(
+      (m) => m.phase === "grupos" && m.group_label === g
+    );
+    if (items.length) sections.push({ title: `Grupo ${g}`, items });
+  }
+  for (const [phase, label] of PHASES) {
+    if (phase === "grupos") continue;
+    const items = matches.filter((m) => m.phase === phase);
+    if (items.length) sections.push({ title: label, items });
+  }
+  const huerfanos = matches.filter(
+    (m) => m.phase === "grupos" && !m.group_label
+  );
+  if (huerfanos.length) sections.push({ title: "Sin grupo", items: huerfanos });
+
   return (
-    <div className="space-y-4">
-      {/* Crear partido */}
+    <div className="space-y-3">
+      {sections.map(({ title, items }) => {
+        const sinResultado = items.filter((m) => m.home_score === null).length;
+        const abiertos = items.filter((m) => m.status === "abierto").length;
+        return (
+          <details key={title} className="card overflow-hidden">
+            <summary className="cursor-pointer select-none px-4 py-3 flex items-center justify-between gap-2 text-sm">
+              <span className="font-bold">{title}</span>
+              <span className="text-xs text-gray-400">
+                {items.length} partidos
+                {abiertos > 0 && (
+                  <span className="ml-2 text-green-600 font-semibold">
+                    {abiertos} abiertos
+                  </span>
+                )}
+                {sinResultado > 0 && (
+                  <span className="ml-2 text-amber-600 font-semibold">
+                    {sinResultado} sin resultado
+                  </span>
+                )}
+              </span>
+            </summary>
+            <div className="space-y-2 border-t border-gray-100 p-3">
+              {items.map((m) => (
+                <MatchRow key={m.id} match={m} />
+              ))}
+            </div>
+          </details>
+        );
+      })}
+      {matches.length === 0 && (
+        <p className="text-sm text-gray-400">Aún no hay partidos.</p>
+      )}
+
+      {/* Crear partido (plegado, se usa poco) */}
+      <details className="card overflow-hidden">
+        <summary className="cursor-pointer select-none px-4 py-3 text-sm font-bold text-gray-500">
+          + Crear partido manualmente
+        </summary>
       <form
         onSubmit={onCreate}
-        className="rounded-xl border border-gray-200 bg-white p-4 grid grid-cols-2 gap-3 sm:grid-cols-3"
+        className="border-t border-gray-100 p-4 grid grid-cols-2 gap-3 sm:grid-cols-3"
       >
         <select
           name="phase"
@@ -86,6 +141,7 @@ export default function MatchAdmin({ matches }: { matches: Match[] }) {
           + Crear partido
         </button>
       </form>
+      </details>
 
       {msg && (
         <p
@@ -96,16 +152,6 @@ export default function MatchAdmin({ matches }: { matches: Match[] }) {
           {msg}
         </p>
       )}
-
-      {/* Lista de partidos */}
-      <div className="space-y-2">
-        {matches.length === 0 && (
-          <p className="text-sm text-gray-400">Aún no hay partidos.</p>
-        )}
-        {matches.map((m) => (
-          <MatchRow key={m.id} match={m} />
-        ))}
-      </div>
     </div>
   );
 }

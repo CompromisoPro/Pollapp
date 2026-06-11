@@ -63,6 +63,8 @@ export interface BonusQuestion {
   deadline: string;
   official_answer: unknown;
   sort: number;
+  /** oculto = los jugadores no lo ven; abierto = visible (cierra por deadline) */
+  status: "oculto" | "abierto";
 }
 
 export interface BonusAnswer {

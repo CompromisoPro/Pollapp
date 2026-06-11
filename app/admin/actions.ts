@@ -342,6 +342,27 @@ export async function saveBonusOfficial(
   }
 }
 
+/** Abre u oculta un bono para los jugadores. */
+export async function setBonusStatus(
+  questionId: string,
+  status: "oculto" | "abierto"
+): Promise<Result> {
+  try {
+    await requireAdmin();
+    const admin = createAdminClient();
+    const { error } = await admin
+      .from("bonus_questions")
+      .update({ status })
+      .eq("id", questionId);
+    if (error) return { error: error.message };
+    revalidatePath("/admin");
+    revalidatePath("/bonos");
+    return { ok: true };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
 // ----------------------------- JUGADORES -----------------------------
 
 /**

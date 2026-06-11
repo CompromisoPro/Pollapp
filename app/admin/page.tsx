@@ -7,6 +7,7 @@ import type {
   BonusQuestion,
   Profile,
 } from "@/lib/types";
+import AdminTabs from "@/components/admin/AdminTabs";
 import MatchAdmin from "@/components/admin/MatchAdmin";
 import TeamAdmin from "@/components/admin/TeamAdmin";
 import BonusAdmin from "@/components/admin/BonusAdmin";
@@ -62,8 +63,8 @@ export default async function AdminPage() {
     .filter((a) => playerQuestionIds.has(a.question_id));
 
   return (
-    <main className="flex-1 mx-auto w-full max-w-3xl px-3 py-6 space-y-10">
-      <header>
+    <main className="flex-1 mx-auto w-full max-w-3xl px-3 py-6">
+      <header className="mb-5">
         <h1 className="text-2xl font-black">Panel de administración</h1>
         <p className="text-sm text-gray-500">
           Aquí cargas resultados, abres partidos, defines respuestas de bonos y
@@ -71,28 +72,48 @@ export default async function AdminPage() {
         </p>
       </header>
 
-      <Section title="⚽ Partidos">
-        <MatchAdmin matches={(matches ?? []) as Match[]} />
-      </Section>
-
-      <Section title="🏳️ Selecciones (para los bonos de grupos y finalistas)">
-        <TeamAdmin teams={(teams ?? []) as Team[]} />
-      </Section>
-
-      <Section title="🎯 Bonos — respuestas oficiales (equipos / números)">
-        <BonusAdmin questions={bonusQuestions} teams={(teams ?? []) as Team[]} />
-      </Section>
-
-      <Section title="✍️ Calificar bonos de jugador (a mano)">
-        <BonusGrading
-          questions={bonusQuestions.filter((q) => q.kind === "player")}
-          answers={gradeAnswers}
-        />
-      </Section>
-
-      <Section title="👥 Jugadores y pagos">
-        <PlayerAdmin players={(players ?? []) as Profile[]} meId={profile.id} />
-      </Section>
+      <AdminTabs
+        tabs={[
+          {
+            id: "partidos",
+            label: "⚽ Partidos",
+            content: <MatchAdmin matches={(matches ?? []) as Match[]} />,
+          },
+          {
+            id: "bonos",
+            label: "🎯 Bonos",
+            content: (
+              <div className="space-y-8">
+                <Section title="Respuestas oficiales y visibilidad">
+                  <BonusAdmin
+                    questions={bonusQuestions}
+                    teams={(teams ?? []) as Team[]}
+                  />
+                </Section>
+                <Section title="✍️ Calificar bonos de jugador (a mano)">
+                  <BonusGrading
+                    questions={bonusQuestions.filter((q) => q.kind === "player")}
+                    answers={gradeAnswers}
+                  />
+                </Section>
+                <Section title="🏳️ Selecciones (para grupos y finalistas)">
+                  <TeamAdmin teams={(teams ?? []) as Team[]} />
+                </Section>
+              </div>
+            ),
+          },
+          {
+            id: "jugadores",
+            label: "👥 Jugadores",
+            content: (
+              <PlayerAdmin
+                players={(players ?? []) as Profile[]}
+                meId={profile.id}
+              />
+            ),
+          },
+        ]}
+      />
     </main>
   );
 }

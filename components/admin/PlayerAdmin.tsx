@@ -12,8 +12,22 @@ export default function PlayerAdmin({
   meId: string;
 }) {
   const [pending, start] = useTransition();
+  const jugadores = players.filter((p) => !p.is_admin);
+  const pagados = jugadores.filter((p) => p.paid).length;
 
   return (
+    <div className="space-y-3">
+      <div className="card px-4 py-3 flex items-center justify-between text-sm">
+        <span className="font-bold">
+          💰 Pagaron: {pagados}/{jugadores.length}
+        </span>
+        {pagados < jugadores.length && (
+          <span className="text-xs text-amber-600 font-semibold">
+            faltan {jugadores.length - pagados}
+          </span>
+        )}
+      </div>
+
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
       <table className="w-full text-sm">
         <thead className="bg-gray-50 text-gray-500">
@@ -72,6 +86,7 @@ export default function PlayerAdmin({
           )}
         </tbody>
       </table>
+    </div>
     </div>
   );
 }

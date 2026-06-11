@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import type { BonusQuestion, Team } from "@/lib/types";
-import { saveBonusOfficial } from "@/app/admin/actions";
+import { saveBonusOfficial, setBonusStatus } from "@/app/admin/actions";
 
 export default function BonusAdmin({
   questions,
@@ -61,11 +61,41 @@ function BonusRow({ q, teams }: { q: BonusQuestion; teams: Team[] }) {
     });
   }
 
+  const visible = q.status === "abierto";
+
+  function toggleStatus() {
+    const next = visible ? "oculto" : "abierto";
+    const aviso = visible
+      ? `¿Ocultar "${q.title}"?\n\nLos jugadores dejarán de verlo.`
+      : `¿Abrir "${q.title}"?\n\nLos jugadores podrán verlo y responder hasta su fecha de cierre.`;
+    if (!confirm(aviso)) return;
+    start(async () => {
+      const res = await setBonusStatus(q.id, next);
+      setMsg("error" in res ? res.error : `✓ Bono ${next}`);
+    });
+  }
+
   return (
     <div className="rounded-xl border border-gray-200 bg-white p-3 text-sm">
       <div className="flex items-center justify-between gap-2">
         <strong>{q.title}</strong>
-        <span className="text-xs text-gray-400">{q.max_points} pts</span>
+        <span className="flex items-center gap-2 shrink-0">
+          <span
+            className={`pill ${
+              visible ? "pill-pitch" : "bg-amber-100 text-amber-700"
+            }`}
+          >
+            {visible ? "visible" : "oculto"}
+          </span>
+          <button
+            disabled={pending}
+            onClick={toggleStatus}
+            className="rounded-lg border border-gray-300 px-2 py-0.5 text-xs font-medium hover:bg-gray-50"
+          >
+            {visible ? "👁️ Ocultar" : "🚀 Abrir"}
+          </button>
+          <span className="text-xs text-gray-400">{q.max_points} pts</span>
+        </span>
       </div>
 
       <div className="mt-2 flex flex-wrap items-center gap-2">

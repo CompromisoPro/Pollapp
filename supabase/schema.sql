@@ -99,7 +99,8 @@ create table if not exists bonus_questions (
   max_points      int  not null default 0,
   deadline        timestamptz not null,         -- cierre para responder este bono (UTC)
   official_answer jsonb,                         -- respuesta oficial (la carga el admin)
-  sort            int  not null default 0
+  sort            int  not null default 0,
+  status          text not null default 'abierto' -- abierto (visible) | oculto
 );
 
 -- ---------------------------------------------------------------------
@@ -163,9 +164,10 @@ create policy pred_update_own on predictions for update to authenticated
                 where m.id = match_id and m.status = 'abierto' and now() < m.lock_at)
   );
 
--- BONOS preguntas: lectura para logueados
+-- BONOS preguntas: los jugadores solo ven los abiertos
 drop policy if exists bq_select on bonus_questions;
-create policy bq_select on bonus_questions for select to authenticated using (true);
+create policy bq_select on bonus_questions for select to authenticated
+  using (status = 'abierto');
 
 -- BONOS respuestas: cada uno las suyas, solo antes del deadline
 drop policy if exists ba_select_own on bonus_answers;
@@ -175,14 +177,16 @@ drop policy if exists ba_insert_own on bonus_answers;
 create policy ba_insert_own on bonus_answers for insert to authenticated
   with check (
     auth.uid() = user_id
-    and exists (select 1 from bonus_questions q where q.id = question_id and now() < q.deadline)
+    and exists (select 1 from bonus_questions q
+                where q.id = question_id and now() < q.deadline and q.status = 'abierto')
   );
 drop policy if exists ba_update_own on bonus_answers;
 create policy ba_update_own on bonus_answers for update to authenticated
   using (auth.uid() = user_id)
   with check (
     auth.uid() = user_id
-    and exists (select 1 from bonus_questions q where q.id = question_id and now() < q.deadline)
+    and exists (select 1 from bonus_questions q
+                where q.id = question_id and now() < q.deadline and q.status = 'abierto')
   );
 
 -- NOTA: el administrador escribe (resultados, respuestas oficiales, abrir partidos,

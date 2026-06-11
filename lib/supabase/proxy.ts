@@ -46,7 +46,14 @@ export async function updateSession(request: NextRequest) {
   if (!user && !isPublic) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
-    return NextResponse.redirect(url);
+    const redirectResponse = NextResponse.redirect(url);
+    // IMPORTANTE: conservar las cookies de sesión que se acaban de refrescar.
+    // Si se descartan, el navegador queda con tokens viejos/parciales y el
+    // usuario aparece "deslogeado de la nada" en la siguiente navegación.
+    for (const cookie of response.cookies.getAll()) {
+      redirectResponse.cookies.set(cookie);
+    }
+    return redirectResponse;
   }
 
   return response;
