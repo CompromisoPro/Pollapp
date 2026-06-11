@@ -2,9 +2,10 @@
 
 import { useState, useTransition } from "react";
 import type { MatchWithPrediction } from "@/lib/types";
-import { savePrediction } from "@/app/partidos/actions";
+import { savePrediction } from "@/app/apuestas/actions";
 import { formatCl } from "@/lib/time";
 import { useNow } from "@/lib/useNow";
+import { flagFor } from "@/lib/flags";
 
 export default function MatchCard({ match }: { match: MatchWithPrediction }) {
   const pred = match.prediction;
@@ -16,6 +17,11 @@ export default function MatchCard({ match }: { match: MatchWithPrediction }) {
   );
   const [msg, setMsg] = useState<string>("");
   const [pending, startTransition] = useTransition();
+  // Último marcador confirmado por el server, para revertir si un guardado falla.
+  const [saved, setSaved] = useState<{ h: string; a: string }>(() => ({
+    h: pred ? String(pred.home_score) : "",
+    a: pred ? String(pred.away_score) : "",
+  }));
 
   // "Ahora" del cliente, refrescado cada 30s para cerrar el partido al llegar la hora.
   const nowMs = useNow();
@@ -31,10 +37,18 @@ export default function MatchCard({ match }: { match: MatchWithPrediction }) {
       setMsg("Ingresa ambos marcadores.");
       return;
     }
-    setMsg("");
+    // Optimista: confirmamos al instante y revertimos si el server falla.
+    setMsg("✓ Guardado");
     startTransition(async () => {
       const res = await savePrediction(match.id, h, a);
-      setMsg("error" in res ? res.error : "✓ Guardado");
+      if ("error" in res) {
+        setHome(saved.h);
+        setAway(saved.a);
+        setMsg(res.error);
+      } else {
+        setSaved({ h: String(h), a: String(a) });
+        setMsg("✓ Guardado");
+      }
     });
   }
 
@@ -50,7 +64,9 @@ export default function MatchCard({ match }: { match: MatchWithPrediction }) {
       </div>
 
       <div className="flex items-center justify-center gap-3">
-        <span className="flex-1 text-right font-semibold">{match.home_team}</span>
+        <span className="flex-1 text-right font-semibold">
+          {match.home_team} {flagFor(match.home_team)}
+        </span>
 
         <div className="flex items-center gap-1.5">
           <ScoreBox
@@ -66,7 +82,9 @@ export default function MatchCard({ match }: { match: MatchWithPrediction }) {
           />
         </div>
 
-        <span className="flex-1 text-left font-semibold">{match.away_team}</span>
+        <span className="flex-1 text-left font-semibold">
+          {flagFor(match.away_team)} {match.away_team}
+        </span>
       </div>
 
       {/* Resultado oficial + puntos cuando el partido terminó */}

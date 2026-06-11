@@ -34,6 +34,25 @@ export default function BonusCard({
       ? teams.filter((t) => t.group_label === question.group_label)
       : teams;
 
+  // Nombre legible de un id de equipo (los answers de equipo guardan ids: 'CHI').
+  const teamName = (id: unknown) =>
+    teams.find((t) => t.id === String(id))?.name ?? String(id ?? "—");
+
+  // Formatea una respuesta (jsonb) para mostrarla: equipos -> nombres, listas -> coma.
+  function fmt(v: unknown): string {
+    if (v === null || v === undefined || v === "") return "—";
+    if (Array.isArray(v)) return v.map((x) => fmt(x)).join(", ");
+    if (question.kind === "team" || question.kind === "finalists" || question.kind === "qualifiers") {
+      return teamName(v);
+    }
+    return String(v);
+  }
+
+  // ¿El bono ya tiene respuesta oficial cargada? Entonces mostramos el resultado.
+  const resolved =
+    question.official_answer !== null && question.official_answer !== undefined;
+  const myPoints = answer?.points ?? 0;
+
   function buildAnswer(): unknown {
     if (question.kind === "finalists" || question.kind === "qualifiers") {
       return pair;
@@ -43,7 +62,8 @@ export default function BonusCard({
   }
 
   function onSave() {
-    setMsg("");
+    // Optimista: confirmamos de inmediato; el server revalida en segundo plano.
+    setMsg("✓ Guardado");
     startTransition(async () => {
       const res = await saveBonusAnswer(question.id, buildAnswer());
       setMsg("error" in res ? res.error : "✓ Guardado");
@@ -112,6 +132,31 @@ export default function BonusCard({
         )}
       </div>
 
+      {/* Resultado: tu apuesta vs la oficial, cuando el bono ya se resolvió. */}
+      {resolved && (
+        <div className="mt-3 rounded-lg bg-gray-50 p-3 text-sm space-y-1">
+          <p className="text-gray-500">
+            Tu apuesta:{" "}
+            <strong className="text-gray-700">
+              {answer ? fmt(answer.answer) : "— (no apostaste)"}
+            </strong>
+          </p>
+          <p className="text-gray-500">
+            Resultado oficial:{" "}
+            <strong className="text-gray-700">{fmt(question.official_answer)}</strong>
+          </p>
+          <p className="pt-0.5">
+            <span
+              className={`pill ${
+                myPoints > 0 ? "pill-pitch" : "bg-gray-100 text-gray-500"
+              }`}
+            >
+              {myPoints > 0 ? `✓ +${myPoints} pts` : "✗ +0 pts"}
+            </span>
+          </p>
+        </div>
+      )}
+
       <div className="mt-3 flex items-center justify-between gap-2">
         <span className="text-xs text-gray-400">
           {isLocked ? (
@@ -119,7 +164,7 @@ export default function BonusCard({
           ) : (
             <>Cierra: {formatCl(question.deadline)} hrs</>
           )}
-          {answer?.points != null && (
+          {!resolved && answer?.points != null && (
             <span className="ml-2 pill pill-pitch">+{answer.points} pts</span>
           )}
         </span>

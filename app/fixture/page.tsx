@@ -1,0 +1,104 @@
+import { createClient } from "@/lib/supabase/server";
+import PageHeader from "@/components/PageHeader";
+import { flagFor } from "@/lib/flags";
+import { formatCl } from "@/lib/time";
+import type { Match } from "@/lib/types";
+
+export const dynamic = "force-dynamic";
+
+const PHASE_LABEL: Record<string, string> = {
+  grupos: "Fase de grupos",
+  dieciseisavos: "Dieciseisavos",
+  octavos: "Octavos",
+  cuartos: "Cuartos",
+  semis: "Semifinales",
+  tercer: "Tercer lugar",
+  final: "Final",
+};
+
+export default async function FixturePage() {
+  const supabase = await createClient();
+
+  // La RLS oculta los partidos en estado 'oculto'.
+  const { data } = await supabase
+    .from("matches")
+    .select("*")
+    .order("kickoff_at", { ascending: true });
+  const matches = (data ?? []) as Match[];
+
+  // Agrupar por día (hora Chile), preservando el orden cronológico.
+  const days = new Map<string, Match[]>();
+  for (const m of matches) {
+    const key = formatCl(m.kickoff_at, {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+    });
+    if (!days.has(key)) days.set(key, []);
+    days.get(key)!.push(m);
+  }
+
+  return (
+    <main className="flex-1 mx-auto w-full max-w-3xl px-3 py-6">
+      <PageHeader
+        title="Fixture"
+        emoji="📅"
+        subtitle="Calendario completo del Mundial. Resultados oficiales a medida que se juegan."
+      />
+
+      {matches.length === 0 ? (
+        <div className="rounded-xl border border-dashed border-gray-300 p-10 text-center text-gray-500">
+          Todavía no hay partidos disponibles. Vuelve pronto 👀
+        </div>
+      ) : (
+        <div className="space-y-8">
+          {[...days.entries()].map(([day, dayMatches]) => (
+            <section key={day}>
+              <h2 className="text-sm font-bold uppercase tracking-wide text-gray-500 mb-3 capitalize">
+                {day}
+              </h2>
+              <div className="card divide-y divide-gray-100">
+                {dayMatches.map((m) => (
+                  <FixtureRow key={m.id} match={m} />
+                ))}
+              </div>
+            </section>
+          ))}
+        </div>
+      )}
+    </main>
+  );
+}
+
+function FixtureRow({ match: m }: { match: Match }) {
+  const finished = m.status === "finalizado" && m.home_score !== null;
+
+  return (
+    <div className="flex items-center gap-3 px-4 py-3">
+      {/* Fase + hora */}
+      <div className="w-20 shrink-0 text-xs text-gray-500">
+        <p className="font-bold uppercase tracking-wide text-brand-600 leading-tight">
+          {PHASE_LABEL[m.phase] ?? m.phase}
+        </p>
+        <p className="mt-0.5">🕓 {formatCl(m.kickoff_at, { hour: "2-digit", minute: "2-digit" })}</p>
+      </div>
+
+      {/* Equipos + marcador */}
+      <div className="flex flex-1 items-center justify-center gap-2 text-sm">
+        <span className="flex-1 text-right font-semibold">
+          {m.home_team} {flagFor(m.home_team)}
+        </span>
+        <span
+          className={`shrink-0 rounded-md px-2 py-0.5 font-extrabold tabular-nums ${
+            finished ? "bg-gray-100 text-ink" : "text-gray-300"
+          }`}
+        >
+          {finished ? `${m.home_score} - ${m.away_score}` : "vs"}
+        </span>
+        <span className="flex-1 text-left font-semibold">
+          {flagFor(m.away_team)} {m.away_team}
+        </span>
+      </div>
+    </div>
+  );
+}

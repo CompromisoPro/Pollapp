@@ -49,7 +49,7 @@ export default async function PartidosPage() {
   return (
     <main className="flex-1 mx-auto w-full max-w-3xl px-3 py-6">
       <PageHeader
-        title="Partidos"
+        title="Apuestas"
         emoji="⚽"
         subtitle="Pon tu marcador. Cierra a las 23:59 (Chile) del día anterior a cada partido."
       />

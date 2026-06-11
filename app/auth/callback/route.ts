@@ -3,12 +3,12 @@ import { createClient } from "@/lib/supabase/server";
 
 /**
  * Recibe el link mágico del correo. Supabase redirige aquí con un ?code=...
- * que intercambiamos por una sesión (cookies) y luego mandamos a /partidos.
+ * que intercambiamos por una sesión (cookies) y luego mandamos a /apuestas.
  */
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
-  const next = searchParams.get("next") ?? "/partidos";
+  const next = searchParams.get("next") ?? "/apuestas";
 
   if (code) {
     const supabase = await createClient();
