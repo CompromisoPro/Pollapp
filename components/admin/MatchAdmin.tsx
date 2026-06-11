@@ -22,6 +22,7 @@ const PHASES = [
 
 export default function MatchAdmin({ matches }: { matches: Match[] }) {
   const [msg, setMsg] = useState("");
+  const [view, setView] = useState<"proximos" | "grupos">("proximos");
   const [pending, start] = useTransition();
 
   function onCreate(e: React.FormEvent<HTMLFormElement>) {
@@ -56,37 +57,98 @@ export default function MatchAdmin({ matches }: { matches: Match[] }) {
   );
   if (huerfanos.length) sections.push({ title: "Sin grupo", items: huerfanos });
 
+  // Vista "Próximos": partidos sin resultado, agrupados por día (los más
+  // cercanos primero). Es la cola de acciones del día a día (abrir / cargar).
+  const pendientes = matches.filter((m) => m.status !== "finalizado");
+  const dayMap = new Map<string, Match[]>();
+  for (const m of pendientes) {
+    const key = formatCl(m.kickoff_at, {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+    });
+    if (!dayMap.has(key)) dayMap.set(key, []);
+    dayMap.get(key)!.push(m);
+  }
+  const proximosDays = [...dayMap.entries()].slice(0, 5); // próximos 5 días con pendientes
+
   return (
     <div className="space-y-3">
-      {sections.map(({ title, items }) => {
-        const sinResultado = items.filter((m) => m.home_score === null).length;
-        const abiertos = items.filter((m) => m.status === "abierto").length;
-        return (
-          <details key={title} className="card overflow-hidden">
-            <summary className="cursor-pointer select-none px-4 py-3 flex items-center justify-between gap-2 text-sm">
-              <span className="font-bold">{title}</span>
-              <span className="text-xs text-gray-400">
-                {items.length} partidos
-                {abiertos > 0 && (
-                  <span className="ml-2 text-green-600 font-semibold">
-                    {abiertos} abiertos
-                  </span>
-                )}
-                {sinResultado > 0 && (
-                  <span className="ml-2 text-amber-600 font-semibold">
-                    {sinResultado} sin resultado
-                  </span>
-                )}
-              </span>
-            </summary>
-            <div className="space-y-2 border-t border-gray-100 p-3">
-              {items.map((m) => (
-                <MatchRow key={m.id} match={m} />
-              ))}
-            </div>
-          </details>
-        );
-      })}
+      {/* Toggle de vista */}
+      <div className="flex gap-1 rounded-xl border border-gray-200 bg-white p-1">
+        {(
+          [
+            ["proximos", "📅 Próximos"],
+            ["grupos", "🔤 Por grupo / fase"],
+          ] as const
+        ).map(([v, label]) => (
+          <button
+            key={v}
+            onClick={() => setView(v)}
+            className={`flex-1 rounded-lg px-3 py-1.5 text-sm font-bold transition-colors ${
+              view === v
+                ? "grad-brand text-white"
+                : "text-gray-500 hover:bg-gray-50"
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {/* VISTA PRÓXIMOS */}
+      {view === "proximos" &&
+        (proximosDays.length === 0 ? (
+          <p className="card p-6 text-center text-sm text-gray-400">
+            🎉 Todos los partidos tienen resultado cargado.
+          </p>
+        ) : (
+          proximosDays.map(([day, items]) => (
+            <section key={day}>
+              <h3 className="text-xs font-bold uppercase tracking-wide text-gray-500 mb-2 capitalize mt-3">
+                {day}
+              </h3>
+              <div className="space-y-2">
+                {items.map((m) => (
+                  <MatchRow key={m.id} match={m} />
+                ))}
+              </div>
+            </section>
+          ))
+        ))}
+
+      {/* VISTA POR GRUPO / FASE */}
+      {view === "grupos" &&
+        sections.map(({ title, items }) => {
+          const sinResultado = items.filter((m) => m.home_score === null).length;
+          const abiertos = items.filter((m) => m.status === "abierto").length;
+          return (
+            <details key={title} className="card overflow-hidden">
+              <summary className="cursor-pointer select-none px-4 py-3 flex items-center justify-between gap-2 text-sm">
+                <span className="font-bold">{title}</span>
+                <span className="text-xs text-gray-400">
+                  {items.length} partidos
+                  {abiertos > 0 && (
+                    <span className="ml-2 text-green-600 font-semibold">
+                      {abiertos} abiertos
+                    </span>
+                  )}
+                  {sinResultado > 0 && (
+                    <span className="ml-2 text-amber-600 font-semibold">
+                      {sinResultado} sin resultado
+                    </span>
+                  )}
+                </span>
+              </summary>
+              <div className="space-y-2 border-t border-gray-100 p-3">
+                {items.map((m) => (
+                  <MatchRow key={m.id} match={m} />
+                ))}
+              </div>
+            </details>
+          );
+        })}
+
       {matches.length === 0 && (
         <p className="text-sm text-gray-400">Aún no hay partidos.</p>
       )}
