@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import PageHeader from "@/components/PageHeader";
-import { flagFor } from "@/lib/flags";
+import { Flag } from "@/components/Flag";
 import { formatCl } from "@/lib/time";
 import type { Match } from "@/lib/types";
 
@@ -86,7 +86,7 @@ function FixtureRow({ match: m }: { match: Match }) {
       {/* Equipos + marcador */}
       <div className="flex flex-1 items-center justify-center gap-2 text-sm">
         <span className="flex-1 text-right font-semibold">
-          {m.home_team} {flagFor(m.home_team)}
+          {m.home_team} <Flag team={m.home_team} />
         </span>
         <span
           className={`shrink-0 rounded-md px-2 py-0.5 font-extrabold tabular-nums ${
@@ -96,7 +96,7 @@ function FixtureRow({ match: m }: { match: Match }) {
           {finished ? `${m.home_score} - ${m.away_score}` : "vs"}
         </span>
         <span className="flex-1 text-left font-semibold">
-          {flagFor(m.away_team)} {m.away_team}
+          <Flag team={m.away_team} /> {m.away_team}
         </span>
       </div>
     </div>

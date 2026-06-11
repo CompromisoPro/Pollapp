@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import PageHeader from "@/components/PageHeader";
-import { flagFor } from "@/lib/flags";
+import { Flag } from "@/components/Flag";
 import { formatCl } from "@/lib/time";
 import type {
   Match,
@@ -151,9 +151,9 @@ export default async function SeguimientoPage() {
                         {phaseLabel(it.phase!)}
                       </p>
                       <p className="font-semibold leading-tight">
-                        {flagFor(it.homeTeam!)} {it.homeTeam}{" "}
+                        <Flag team={it.homeTeam!} /> {it.homeTeam}{" "}
                         <span className="text-gray-400 font-normal">vs</span>{" "}
-                        {flagFor(it.awayTeam!)} {it.awayTeam}
+                        <Flag team={it.awayTeam!} /> {it.awayTeam}
                       </p>
                       <p className="text-sm text-gray-500 mt-1">
                         Oficial:{" "}
