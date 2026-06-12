@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Logo } from "@/components/Logo";
+import OnlineCount from "@/components/OnlineCount";
 
 // orden de la navegación principal (acción primero, consulta después).
 const LINKS = [
@@ -53,6 +54,7 @@ export default function NavBar({
           </div>
 
           <div className="ml-auto flex items-center gap-3 md:border-l md:border-white/15 md:pl-4">
+            <OnlineCount />
             <span className="inline-flex items-center gap-1 rounded-full bg-white/10 px-2.5 py-1 text-sm font-bold">
               <span className="text-[color:var(--color-gold)]">★</span>
               {points}
