@@ -356,7 +356,7 @@ export async function setBonusStatus(
       .eq("id", questionId);
     if (error) return { error: error.message };
     revalidatePath("/admin");
-    revalidatePath("/bonos");
+    revalidatePath("/apuestas/bonos");
     return { ok: true };
   } catch (e) {
     return fail(e);
@@ -399,8 +399,8 @@ export async function gradeBonusAnswer(
 
     await recomputeAllTotals(admin);
     revalidatePath("/admin");
-    revalidatePath("/bonos");
-    revalidatePath("/tabla");
+    revalidatePath("/apuestas/bonos");
+    revalidatePath("/resultados");
     return { ok: true };
   } catch (e) {
     return fail(e);

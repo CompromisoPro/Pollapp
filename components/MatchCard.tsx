@@ -88,13 +88,31 @@ export default function MatchCard({ match }: { match: MatchWithPrediction }) {
         </span>
       </div>
 
+      {/* Cerrado SIN resultado todavía: mostramos tu apuesta, a la espera. */}
+      {isLocked && !isFinished && (
+        <div className="mt-3 text-center text-sm text-gray-500">
+          {pred ? (
+            <>
+              Tu apuesta:{" "}
+              <strong className="text-gray-700">
+                {pred.home_score}-{pred.away_score}
+              </strong>
+              <span className="mx-1.5 text-gray-300">·</span>
+              esperando resultado oficial
+            </>
+          ) : (
+            <span className="text-gray-400">No apostaste este partido.</span>
+          )}
+        </div>
+      )}
+
       {/* Resultado oficial + puntos cuando el partido terminó */}
       {isFinished && match.home_score !== null && (
         <div className="mt-3 text-center text-sm">
           <span className="text-gray-500">
             Resultado oficial: <strong>{match.home_score}-{match.away_score}</strong>
           </span>
-          {pred && (
+          {pred ? (
             <span
               className={`ml-2 pill ${
                 (pred.points ?? 0) > 0 ? "pill-pitch" : "pill-mute"
@@ -102,6 +120,8 @@ export default function MatchCard({ match }: { match: MatchWithPrediction }) {
             >
               +{pred.points ?? 0} pts
             </span>
+          ) : (
+            <span className="ml-2 text-gray-400">No apostaste</span>
           )}
         </div>
       )}

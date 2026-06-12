@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { computeStandings, type MatchResult } from "@/lib/standings";
-import { flagFor } from "@/lib/flags";
+import { Flag } from "@/components/Flag";
 import type { Team, Match } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -87,7 +87,7 @@ export default async function GruposPage() {
                           >
                             {s.rank}
                           </span>
-                          <span className="mr-1">{flagFor(s.team)}</span>
+                          <Flag team={s.team} className="mr-1" />
                           {s.team}
                         </td>
                         <td className="px-1 py-1.5 text-center text-gray-600 tabular-nums">
