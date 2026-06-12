@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { computeStandings, type MatchResult } from "@/lib/standings";
 import { Flag } from "@/components/Flag";
+import EmptyState from "@/components/ui/EmptyState";
 import type { Team, Match } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -24,9 +25,9 @@ export default async function GruposPage() {
     .sort() as string[];
 
   return groups.length === 0 ? (
-    <div className="rounded-xl border border-dashed border-gray-300 p-10 text-center text-gray-500">
-      Aún no se han cargado las selecciones. (Admin: corre fixtures.sql)
-    </div>
+    <EmptyState emoji="🌎" title="Aún no se han cargado las selecciones.">
+      (Admin: corre fixtures.sql)
+    </EmptyState>
   ) : (
     <>
       <p className="text-sm text-gray-500 mb-4">

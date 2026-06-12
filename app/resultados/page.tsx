@@ -71,7 +71,7 @@ export default async function TablaPage() {
               return (
                 <tr
                   key={r.user_id}
-                  className={`border-t border-gray-100 ${isMe ? "bg-blue-50" : ""}`}
+                  className={`border-t border-gray-100 ${isMe ? "bg-brand-50" : ""}`}
                 >
                   <td className="px-3 py-2 text-gray-500 font-medium tabular-nums">
                     {medal(r.rank)}
@@ -79,7 +79,7 @@ export default async function TablaPage() {
                   <td className="px-3 py-2 font-medium">
                     {r.full_name ?? "Sin nombre"}
                     {isMe && (
-                      <span className="ml-1 text-xs text-blue-500">(tú)</span>
+                      <span className="ml-1 text-xs text-brand-600">(tú)</span>
                     )}
                     {!r.paid && (
                       <span className="ml-2 text-xs text-amber-600">

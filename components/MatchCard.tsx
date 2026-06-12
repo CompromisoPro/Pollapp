@@ -1,14 +1,25 @@
 "use client";
 
-import Link from "next/link";
 import { useState, useTransition } from "react";
 import type { MatchWithPrediction } from "@/lib/types";
 import { savePrediction } from "@/app/apuestas/actions";
 import { formatCl } from "@/lib/time";
 import { useNow } from "@/lib/useNow";
 import { Flag } from "@/components/Flag";
+import BetChart from "@/components/BetChart";
+import SaveButton from "@/components/ui/SaveButton";
+import SaveMessage from "@/components/ui/SaveMessage";
+import StatusBadge from "@/components/ui/StatusBadge";
+import DetailLink from "@/components/ui/DetailLink";
 
-export default function MatchCard({ match }: { match: MatchWithPrediction }) {
+export default function MatchCard({
+  match,
+  bets,
+}: {
+  match: MatchWithPrediction;
+  /** Apuestas del grupo, reveladas cuando el partido ya cerró su plazo. */
+  bets?: { home: number; away: number }[];
+}) {
   const pred = match.prediction;
   const [home, setHome] = useState<string>(
     pred ? String(pred.home_score) : ""
@@ -59,8 +70,9 @@ export default function MatchCard({ match }: { match: MatchWithPrediction }) {
         <span className="text-xs font-bold uppercase tracking-wide text-brand-600">
           {phaseLabel(match.phase)}
         </span>
-        <span className="text-xs text-gray-500">
-          🕓 {formatCl(match.kickoff_at)}
+        <span className="flex items-center gap-2 text-xs text-gray-500">
+          {isLocked && !isFinished && <StatusBadge status="en-juego" />}
+          {formatCl(match.kickoff_at)}
         </span>
       </div>
 
@@ -94,24 +106,17 @@ export default function MatchCard({ match }: { match: MatchWithPrediction }) {
           <span className="text-xs text-gray-500">
             Cierra: {formatCl(match.lock_at)} hrs
           </span>
-          <button
-            onClick={onSave}
-            disabled={pending}
-            className="btn btn-primary px-3 py-1.5 text-xs"
-          >
-            {pending ? "Guardando…" : pred ? "Actualizar" : "Guardar"}
-          </button>
+          <SaveButton pending={pending} isEditing={!!pred} onClick={onSave} />
         </div>
       )}
 
       {/* Cerrado sin resultado aún: tu apuesta + a la espera, en una línea. */}
       {isLocked && !isFinished && (
-        <div className="mt-3 text-center text-sm text-gray-500">
-          🔒{" "}
+        <p className="mt-3 text-center text-sm text-gray-500">
           {pred ? (
             <>
               Tu apuesta:{" "}
-              <strong className="text-gray-700">
+              <strong className="text-gray-700 tabular-nums">
                 {pred.home_score}-{pred.away_score}
               </strong>
               <span className="mx-1.5 text-gray-300">·</span>
@@ -120,6 +125,16 @@ export default function MatchCard({ match }: { match: MatchWithPrediction }) {
           ) : (
             <span>No apostaste este partido.</span>
           )}
+        </p>
+      )}
+
+      {/* Cerrado: lo que apostó el grupo (mismo gráfico en toda la app). */}
+      {isLocked && !isFinished && bets && (
+        <div className="mt-3 border-t border-gray-100 pt-3">
+          <p className="text-xs font-bold text-gray-500 mb-2">
+            📊 Lo que apostó el grupo ({bets.length})
+          </p>
+          <BetChart bets={bets} />
         </div>
       )}
 
@@ -128,7 +143,7 @@ export default function MatchCard({ match }: { match: MatchWithPrediction }) {
         <div className="mt-3 text-center text-sm">
           <span className="text-gray-500">
             Resultado oficial:{" "}
-            <strong>
+            <strong className="tabular-nums">
               {match.home_score}-{match.away_score}
             </strong>
           </span>
@@ -146,25 +161,12 @@ export default function MatchCard({ match }: { match: MatchWithPrediction }) {
         </div>
       )}
 
-      {msg && (
-        <p
-          className={`mt-2 text-xs ${
-            msg.startsWith("✓") ? "text-green-600" : "text-red-600"
-          }`}
-        >
-          {msg}
-        </p>
-      )}
+      <SaveMessage msg={msg} />
 
       {/* Ver apuestas de todos: se revela apenas cierra el plazo. */}
       {isLocked && (
         <div className="mt-3 border-t border-gray-100 pt-2 text-center">
-          <Link
-            href={`/partido/${match.id}`}
-            className="text-xs font-bold text-brand-600 hover:underline"
-          >
-            👀 Ver apuestas de todos
-          </Link>
+          <DetailLink matchId={match.id} />
         </div>
       )}
     </div>
@@ -189,7 +191,7 @@ function ScoreBox({
       value={value}
       disabled={disabled}
       onChange={(e) => onChange(e.target.value)}
-      className="field w-12 text-center py-1.5 text-lg font-extrabold disabled:bg-gray-100 disabled:text-gray-500"
+      className="field w-12 text-center py-1.5 text-lg font-extrabold tabular-nums disabled:bg-gray-100 disabled:text-gray-500"
     />
   );
 }

@@ -8,6 +8,7 @@ import type {
   BonusAnswer,
   Team,
 } from "@/lib/types";
+import EmptyState from "@/components/ui/EmptyState";
 
 export const dynamic = "force-dynamic";
 
@@ -128,10 +129,9 @@ export default async function SeguimientoPage() {
       </div>
 
       {withTotal.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-gray-300 p-10 text-center text-gray-500">
-          Todavía no hay partidos finalizados con tus pronósticos. Vuelve cuando
-          arranque el Mundial 👀
-        </div>
+        <EmptyState emoji="📈" title="Todavía no hay partidos finalizados con tus pronósticos.">
+          Vuelve cuando arranque el Mundial. 👀
+        </EmptyState>
       ) : (
         <ol className="space-y-3">
           {withTotal.map((it) => (

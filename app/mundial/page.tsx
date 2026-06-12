@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { Flag } from "@/components/Flag";
 import { formatCl } from "@/lib/time";
+import EmptyState from "@/components/ui/EmptyState";
 import type { Match } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -39,9 +40,9 @@ export default async function FixturePage() {
   }
 
   return matches.length === 0 ? (
-    <div className="rounded-xl border border-dashed border-gray-300 p-10 text-center text-gray-500">
-      Todavía no hay partidos disponibles. Vuelve pronto 👀
-    </div>
+    <EmptyState emoji="⚽" title="Todavía no hay partidos disponibles.">
+      Vuelve pronto. 👀
+    </EmptyState>
   ) : (
     <div className="space-y-8">
       {[...days.entries()].map(([day, dayMatches]) => (
@@ -72,7 +73,9 @@ function FixtureRow({ match: m }: { match: Match }) {
         <p className="font-bold uppercase tracking-wide text-brand-600 leading-tight">
           {PHASE_LABEL[m.phase] ?? m.phase}
         </p>
-        <p className="mt-0.5">🕓 {formatCl(m.kickoff_at, { hour: "2-digit", minute: "2-digit" })}</p>
+        <p className="mt-0.5 tabular-nums">
+          {formatCl(m.kickoff_at, { hour: "2-digit", minute: "2-digit" })}
+        </p>
       </div>
 
       {/* Equipos + marcador */}

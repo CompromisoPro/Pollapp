@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import BonusCard from "@/components/BonusCard";
+import EmptyState from "@/components/ui/EmptyState";
 import type { BonusQuestion, BonusAnswer, Team } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -37,9 +38,9 @@ export default async function BonosPage() {
   );
 
   return questions.length === 0 ? (
-    <div className="rounded-xl border border-dashed border-gray-300 p-10 text-center text-gray-500">
-      Aún no hay bonos cargados.
-    </div>
+    <EmptyState emoji="🎯" title="Aún no hay bonos cargados.">
+      Vuelve pronto: los bonos por fase se abren a medida que avanza el torneo. 👀
+    </EmptyState>
   ) : (
     <div className="space-y-8">
       {phases.map((ph) => (

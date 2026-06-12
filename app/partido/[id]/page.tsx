@@ -95,16 +95,14 @@ export default async function PartidoPage({
         )}
       </div>
 
-      <h1 className="text-lg font-black mt-6 mb-3">
-        👀 Apuestas de todos
-      </h1>
+      <h1 className="text-lg font-black mt-6 mb-3">Apuestas de todos</h1>
 
       {!locked ? (
         <div className="card p-8 text-center">
           <p className="text-3xl mb-2">🔒</p>
           <p className="font-bold">Las apuestas se revelan al cerrar el plazo</p>
           <p className="text-sm text-gray-500 mt-1">
-            Cierra el {formatCl(match.lock_at)} hrs. ¡Para que nadie copie! 😏
+            Cierra el {formatCl(match.lock_at)} hrs. Para que nadie copie.
           </p>
         </div>
       ) : preds.length === 0 ? (

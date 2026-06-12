@@ -1,11 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import Link from "next/link";
+import { useState, useEffect, useMemo } from "react";
 import MatchCard from "@/components/MatchCard";
-import BetChart from "@/components/BetChart";
-import { Flag } from "@/components/Flag";
-import { formatCl } from "@/lib/time";
 import type { MatchWithPrediction } from "@/lib/types";
 
 export interface ApuestaDay {
@@ -22,6 +18,13 @@ export default function ApuestasCarousel({
   days: ApuestaDay[];
   charts: Record<number, { home: number; away: number }[]>;
 }) {
+  // Índice key -> día, para no re-escanear el array en cada render.
+  const byKey = useMemo(() => {
+    const m = new Map<string, ApuestaDay>();
+    for (const d of days) m.set(d.key, d);
+    return m;
+  }, [days]);
+
   // Por defecto seleccionamos el día apostable (lo accionable); si no hay,
   // mostramos el que esté en juego.
   const [sel, setSel] = useState(
@@ -45,7 +48,7 @@ export default function ApuestasCarousel({
     sessionStorage.setItem("apuestas-dia", key);
   }
 
-  const active = days.find((d) => d.key === sel) ?? days[0];
+  const active = byKey.get(sel) ?? days[0];
 
   return (
     <div>
@@ -64,97 +67,47 @@ export default function ApuestasCarousel({
               role="tab"
               aria-selected={on}
               onClick={() => pick(d.key)}
-              className={`shrink-0 min-h-[44px] rounded-full px-3.5 py-2 text-sm font-bold border transition-colors ${
+              className={`shrink-0 min-h-[44px] rounded-full px-3.5 py-1.5 text-[13px] transition-colors ${
                 on
-                  ? "grad-brand text-white border-transparent shadow"
-                  : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
+                  ? "grad-brand text-white shadow-sm font-bold"
+                  : "bg-gray-50 text-gray-500 hover:bg-gray-100 font-semibold"
               }`}
             >
               <span className="capitalize">{d.label}</span>
-              <span
-                className={`ml-2 rounded-full px-1.5 py-0.5 text-xs font-bold ${
-                  on
-                    ? "bg-white/20"
-                    : live
-                    ? "bg-red-100 text-red-700"
-                    : "bg-green-100 text-green-800"
-                }`}
-              >
-                {live ? "🔴 en juego" : "🎯 apostar"}
-              </span>
+              {on ? (
+                // La pill activa ya comunica por el gradiente: basta el dot del modo.
+                <span aria-hidden className="ml-1.5">
+                  {live ? "🔴" : "🎯"}
+                </span>
+              ) : (
+                <span
+                  className={`ml-2 rounded-full px-1.5 py-0.5 text-[11px] font-bold ${
+                    live ? "bg-red-100 text-red-700" : "bg-green-100 text-green-800"
+                  }`}
+                >
+                  {live ? "🔴 en juego" : "🎯 apostar"}
+                </span>
+              )}
             </button>
           );
         })}
       </div>
 
-      {/* Contenido del día seleccionado */}
-      {active.mode === "bet" ? (
-        <div role="tabpanel" className="space-y-3">
-          {active.matches.map((m) => (
-            <MatchCard key={m.id} match={m} />
-          ))}
-        </div>
-      ) : (
-        <div role="tabpanel" className="space-y-3">
+      {/* Contenido del día seleccionado. Una sola card (MatchCard) cubre todo
+          el ciclo: apostar, en juego (con apuestas del grupo) y finalizado. */}
+      <div role="tabpanel" className="space-y-3">
+        {active.mode === "live" && (
           <p className="text-xs text-gray-500">
             Estos partidos ya cerraron. Mira cómo apostó todo el mundo 👀
           </p>
-          {active.matches.map((m) => (
-            <LiveCard key={m.id} match={m} bets={charts[m.id] ?? []} />
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function LiveCard({
-  match: m,
-  bets,
-}: {
-  match: MatchWithPrediction;
-  bets: { home: number; away: number }[];
-}) {
-  return (
-    <div className="card p-4">
-      <div className="flex items-center justify-between mb-3">
-        <span className="text-xs font-bold uppercase tracking-wide text-red-600">
-          🔴 En juego
-        </span>
-        <span className="text-xs text-gray-500">🕓 {formatCl(m.kickoff_at)}</span>
-      </div>
-
-      <div className="flex items-center justify-center gap-3 font-semibold">
-        <span className="flex-1 text-right">
-          {m.home_team} <Flag team={m.home_team} />
-        </span>
-        <span className="rounded-md bg-gray-100 px-2.5 py-0.5 text-sm font-black">
-          {m.prediction
-            ? `${m.prediction.home_score}-${m.prediction.away_score}`
-            : "—"}
-        </span>
-        <span className="flex-1 text-left">
-          <Flag team={m.away_team} /> {m.away_team}
-        </span>
-      </div>
-      <p className="text-center text-xs text-gray-500 mt-1">
-        {m.prediction ? "tu apuesta" : "no apostaste este partido"}
-      </p>
-
-      <div className="mt-3 border-t border-gray-100 pt-3">
-        <p className="text-xs font-bold text-gray-500 mb-2">
-          📊 Lo que apostó el grupo ({bets.length})
-        </p>
-        <BetChart bets={bets} />
-      </div>
-
-      <div className="mt-3 text-center">
-        <Link
-          href={`/partido/${m.id}`}
-          className="text-xs font-bold text-brand-600 hover:underline"
-        >
-          👀 Ver el detalle de cada uno
-        </Link>
+        )}
+        {active.matches.map((m) => (
+          <MatchCard
+            key={m.id}
+            match={m}
+            bets={active.mode === "live" ? charts[m.id] ?? [] : undefined}
+          />
+        ))}
       </div>
     </div>
   );
