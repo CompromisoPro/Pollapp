@@ -11,15 +11,12 @@ export default async function PartidosPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Traemos los partidos visibles (no 'oculto') y los pronósticos del usuario.
-  // El calendario completo y los ya jugados están en Fixture; /apuestas se
-  // queda solo con lo accionable (ver el filtro más abajo).
+  // Traemos TODOS los partidos (sin filtrar status en la query) y los
+  // pronósticos del usuario. El filtro de qué mostrar se hace abajo en JS,
+  // porque un partido que apostaste debe verse aunque luego lo hayan vuelto
+  // a 'oculto'. La RLS de matches igual deja leerlos a un logueado.
   const [{ data: matchesData }, { data: predData }] = await Promise.all([
-    supabase
-      .from("matches")
-      .select("*")
-      .neq("status", "oculto")
-      .order("kickoff_at", { ascending: true }),
+    supabase.from("matches").select("*").order("kickoff_at", { ascending: true }),
     supabase.from("predictions").select("*").eq("user_id", user!.id),
   ]);
   const matches = (matchesData ?? []) as Match[];
@@ -31,10 +28,10 @@ export default async function PartidosPage() {
 
   // Qué mostrar en /apuestas:
   //  - los partidos que AÚN puedes apostar (abierto y plazo vigente), y
-  //  - TODOS los partidos que apostaste, en cualquier estado (cerrado a la
-  //    espera de resultado, o ya finalizado con sus puntos).
-  // Los partidos cerrados que NO apostaste no aparecen (ya no puedes hacer
-  // nada con ellos); igual se ven en Fixture y en "Ver apuestas de todos".
+  //  - TODOS los partidos que apostaste, en cualquier estado (oculto, cerrado
+  //    a la espera de resultado, o ya finalizado con sus puntos).
+  // Los partidos que NO apostaste y ya no son apostables no aparecen; igual se
+  // ven en Fixture y en "Ver apuestas de todos".
   const nowMs = Date.now();
   const enriched: MatchWithPrediction[] = matches
     .map((m) => ({ ...m, prediction: predByMatch.get(m.id) ?? null }))
