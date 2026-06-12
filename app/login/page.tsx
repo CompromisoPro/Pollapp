@@ -44,6 +44,19 @@ export default function LoginPage() {
       setStatus("error");
       setErrorMsg("Correo o contraseña incorrectos. Tu contraseña es tu RUT.");
     } else {
+      // Pedirle explícitamente al navegador que ofrezca guardar la credencial
+      // (Credential Management API: Chrome/Edge/Android). En una app moderna
+      // sin recarga clásica, las heurísticas a veces no saltan solas; esto es
+      // el método oficial. Safari no la soporta: usa sus propias heurísticas.
+      try {
+        type PCCtor = new (data: { id: string; password: string }) => Credential;
+        const PC = (window as { PasswordCredential?: PCCtor }).PasswordCredential;
+        if (PC && navigator.credentials?.store) {
+          await navigator.credentials.store(new PC({ id: mail, password }));
+        }
+      } catch {
+        // mejora opcional: si falla, seguimos igual
+      }
       window.location.assign("/apuestas");
     }
   }
