@@ -1,5 +1,4 @@
 import { createClient } from "@/lib/supabase/server";
-import PageHeader from "@/components/PageHeader";
 import { computeStandings, type MatchResult } from "@/lib/standings";
 import { flagFor } from "@/lib/flags";
 import type { Team, Match } from "@/lib/types";
@@ -24,20 +23,17 @@ export default async function GruposPage() {
   const groups = [...new Set(teams.map((t) => t.group_label).filter(Boolean))]
     .sort() as string[];
 
-  return (
-    <main className="flex-1 mx-auto w-full max-w-3xl px-3 py-6">
-      <PageHeader
-        title="Grupos"
-        emoji="📊"
-        subtitle="Las tablas se arman solas con cada resultado oficial. En verde, los 2 clasificados."
-      />
-
-      {groups.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-gray-300 p-10 text-center text-gray-500">
-          Aún no se han cargado las selecciones. (Admin: corre fixtures.sql)
-        </div>
-      ) : (
-        <div className="grid gap-4 sm:grid-cols-2">
+  return groups.length === 0 ? (
+    <div className="rounded-xl border border-dashed border-gray-300 p-10 text-center text-gray-500">
+      Aún no se han cargado las selecciones. (Admin: corre fixtures.sql)
+    </div>
+  ) : (
+    <>
+      <p className="text-sm text-gray-500 mb-4">
+        En <span className="text-pitch font-semibold">verde</span>, los 2
+        clasificados de cada grupo.
+      </p>
+      <div className="grid gap-4 sm:grid-cols-2">
           {groups.map((g) => {
             const names = teams
               .filter((t) => t.group_label === g)
@@ -111,7 +107,6 @@ export default async function GruposPage() {
             );
           })}
         </div>
-      )}
-    </main>
+    </>
   );
 }

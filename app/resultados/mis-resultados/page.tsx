@@ -1,5 +1,4 @@
 import { createClient } from "@/lib/supabase/server";
-import PageHeader from "@/components/PageHeader";
 import { Flag } from "@/components/Flag";
 import { formatCl } from "@/lib/time";
 import type {
@@ -119,13 +118,7 @@ export default async function SeguimientoPage() {
   const grandTotal = running;
 
   return (
-    <main className="flex-1 mx-auto w-full max-w-3xl px-3 py-6">
-      <PageHeader
-        title="Seguimiento"
-        emoji="📈"
-        subtitle="Cómo fuiste acumulando puntos, partido a partido y bono a bono."
-      />
-
+    <>
       {/* Resumen */}
       <div className="card p-4 mb-6 flex items-center justify-between">
         <span className="text-sm text-gray-500">Total acumulado</span>
@@ -206,7 +199,7 @@ export default async function SeguimientoPage() {
           ))}
         </ol>
       )}
-    </main>
+    </>
   );
 }
 

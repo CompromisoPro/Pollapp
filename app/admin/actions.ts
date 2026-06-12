@@ -241,8 +241,8 @@ export async function saveMatchResult(
     await recomputeAllTotals(admin);
     revalidatePath("/admin");
     revalidatePath("/apuestas");
-    revalidatePath("/tabla");
-    revalidatePath("/grupos");
+    revalidatePath("/resultados");
+    revalidatePath("/mundial/grupos");
     revalidatePath("/apuestas/bonos");
     return { ok: true };
   } catch (e) {
@@ -335,7 +335,7 @@ export async function saveBonusOfficial(
     await recomputeAllTotals(admin);
     revalidatePath("/admin");
     revalidatePath("/apuestas/bonos");
-    revalidatePath("/tabla");
+    revalidatePath("/resultados");
     return { ok: true };
   } catch (e) {
     return fail(e);
@@ -417,7 +417,7 @@ export async function setPaid(userId: string, paid: boolean): Promise<Result> {
       .eq("id", userId);
     if (error) return { error: error.message };
     revalidatePath("/admin");
-    revalidatePath("/tabla");
+    revalidatePath("/resultados");
     return { ok: true };
   } catch (e) {
     return fail(e);

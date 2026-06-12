@@ -7,10 +7,8 @@ import { Logo } from "@/components/Logo";
 // orden de la navegación principal (acción primero, consulta después).
 const LINKS = [
   ["/apuestas", "Apuestas", "🎯"],
-  ["/fixture", "Fixture", "📅"],
-  ["/grupos", "Grupos", "📊"],
-  ["/tabla", "Tabla", "🏆"],
-  ["/seguimiento", "Seguimiento", "📈"],
+  ["/mundial", "Mundial", "🌎"],
+  ["/resultados", "Resultados", "🏅"],
 ] as const;
 
 export default function NavBar({
