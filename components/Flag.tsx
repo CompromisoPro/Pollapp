@@ -1,8 +1,10 @@
 import { flagIso } from "@/lib/flags";
 
 /**
- * Bandera de un equipo como IMAGEN (flagcdn.com). Se ve igual en todos los
- * sistemas (Windows incluido). Si el nombre no es un país (ej. "Ganador
+ * Bandera de un equipo como IMAGEN, servida desde NUESTRO propio sitio
+ * (public/flags/*.svg). Antes usábamos un CDN externo (flagcdn) que fallaba de
+ * forma intermitente y a veces dejaba banderas sin cargar. Al alojarlas nosotros
+ * cargan rápido y nunca desaparecen. Si el nombre no es un país (ej. "Ganador
  * Grupo A"), muestra un balón ⚽.
  */
 export function Flag({
@@ -17,7 +19,7 @@ export function Flag({
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
-      src={`https://flagcdn.com/${iso}.svg`}
+      src={`/flags/${iso}.svg`}
       alt=""
       width={20}
       height={15}

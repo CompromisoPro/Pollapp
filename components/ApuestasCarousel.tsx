@@ -31,8 +31,10 @@ export default function ApuestasCarousel({
   // Recordar el día elegido entre navegaciones (sessionStorage), pero solo si
   // ese día SIGUE siendo apostable. Si ya cerró (pasó a 'live'), no lo
   // restauramos: dejamos el default, que es el primer día apostable.
+  // Se lee tras montar (SSR no conoce sessionStorage), por eso el setState aquí.
   useEffect(() => {
     const saved = sessionStorage.getItem("apuestas-dia");
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (saved && days.some((d) => d.key === saved && d.mode === "bet")) {
       setSel(saved);
     }
