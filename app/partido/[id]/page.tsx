@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { Flag } from "@/components/Flag";
+import BetChart from "@/components/BetChart";
 import { formatCl } from "@/lib/time";
 import { scoreLabel } from "@/lib/scoring";
 import type { Match } from "@/lib/types";
@@ -111,7 +112,20 @@ export default async function PartidoPage({
           Nadie apostó este partido.
         </div>
       ) : (
-        <div className="overflow-hidden card">
+        <>
+          <div className="card p-4 mb-3">
+            <p className="text-xs font-bold text-gray-500 mb-2">
+              📊 Marcadores más apostados ({preds.length})
+            </p>
+            <BetChart
+              bets={preds.map((p) => ({
+                home: p.home_score,
+                away: p.away_score,
+              }))}
+            />
+          </div>
+
+          <div className="overflow-hidden card">
           <table className="w-full text-sm">
             <thead className="bg-gray-50 text-gray-500">
               <tr>
@@ -167,7 +181,8 @@ export default async function PartidoPage({
               })}
             </tbody>
           </table>
-        </div>
+          </div>
+        </>
       )}
     </main>
   );
