@@ -1,5 +1,5 @@
 import SubTabs from "@/components/SubTabs";
-import SectionBanner, { SectionWatermark } from "@/components/SectionBanner";
+import SectionBanner from "@/components/SectionBanner";
 
 const TABS = [
   { href: "/apuestas", label: "Partidos", emoji: "⚽" },
@@ -13,7 +13,6 @@ export default function ApuestasLayout({
 }) {
   return (
     <main className="relative flex-1 mx-auto w-full max-w-3xl px-3 py-6 overflow-x-clip">
-      <SectionWatermark />
       <SectionBanner
         emoji="🎯"
         title="Apuestas"

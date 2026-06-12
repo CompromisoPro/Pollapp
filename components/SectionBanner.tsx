@@ -1,7 +1,6 @@
 /**
  * Banner de sección estilo "Mundial 26": fondo noche, emblema oficial a la
- * derecha y franja de bloques de color abajo. Usar dentro de un contenedor
- * con `relative` si se combina con <SectionWatermark />.
+ * derecha y franja de bloques de color abajo.
  */
 export default function SectionBanner({
   title,
@@ -33,18 +32,5 @@ export default function SectionBanner({
       </div>
       <div aria-hidden className="h-1.5 stripe-mundial" />
     </div>
-  );
-}
-
-/** Emblema gigante como marca de agua (poner dentro de un main `relative`). */
-export function SectionWatermark() {
-  return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      src="/mundial26.svg"
-      alt=""
-      aria-hidden
-      className="pointer-events-none select-none absolute -right-12 top-44 h-96 w-auto opacity-[0.05] rotate-6"
-    />
   );
 }

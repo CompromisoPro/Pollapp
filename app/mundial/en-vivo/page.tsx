@@ -35,7 +35,7 @@ export default async function EnVivoPage() {
       </p>
 
       {todayMatches.length === 0 ? (
-        <div className="card p-10 text-center text-gray-400">
+        <div className="card p-10 text-center text-gray-500">
           Hoy no hay partidos 😴 Revisa el fixture para ver los próximos.
         </div>
       ) : (

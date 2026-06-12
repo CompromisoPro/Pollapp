@@ -115,7 +115,7 @@ export default function LoginPage() {
                 placeholder="12.345.678-9"
                 className="field w-full px-3 py-2.5 text-sm"
               />
-              <p className="text-xs text-gray-400 mt-1">
+              <p className="text-xs text-gray-500 mt-1">
                 Con tu RUT te mostramos el correo con el que estás inscrito.
               </p>
             </div>
@@ -200,12 +200,12 @@ export default function LoginPage() {
                   type="button"
                   onClick={() => setShowPass(!showPass)}
                   aria-label={showPass ? "Ocultar contraseña" : "Mostrar contraseña"}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
                 >
                   {showPass ? "🙈" : "👁️"}
                 </button>
               </div>
-              <p className="text-xs text-gray-400 mt-1">
+              <p className="text-xs text-gray-500 mt-1">
                 Tu contraseña es tu RUT con guión (ej. 12345678-9).
               </p>
             </div>
@@ -229,7 +229,7 @@ export default function LoginPage() {
                 setStatus("idle");
                 setErrorMsg("");
               }}
-              className="w-full text-xs text-gray-400 underline"
+              className="w-full text-xs text-gray-500 underline"
             >
               ¿Olvidaste con qué correo te inscribiste? Búscalo con tu RUT
             </button>

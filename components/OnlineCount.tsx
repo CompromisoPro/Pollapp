@@ -42,13 +42,9 @@ export default function OnlineCount() {
   return (
     <span
       title={`${count} ${count === 1 ? "persona" : "personas"} mirando ahora`}
-      className="inline-flex items-center gap-1.5 rounded-full bg-green-500/20 px-2.5 py-1 text-sm font-bold text-green-100"
+      className="inline-flex items-center gap-1.5 rounded-full bg-green-600 px-2.5 py-1 text-sm font-bold text-white"
     >
-      <span
-        className="dot-live"
-        style={{ background: "#22c55e" }}
-        aria-hidden
-      />
+      <span className="dot-live" style={{ background: "#bbf7d0" }} aria-hidden />
       👀 {count}
     </span>
   );

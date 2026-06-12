@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import MatchCard from "@/components/MatchCard";
 import BetChart from "@/components/BetChart";
@@ -27,20 +27,38 @@ export default function ApuestasCarousel({
   const [sel, setSel] = useState(
     () => (days.find((d) => d.mode === "bet") ?? days[0]).key
   );
+
+  // Recordar el día elegido entre navegaciones (sessionStorage), si sigue válido.
+  useEffect(() => {
+    const saved = sessionStorage.getItem("apuestas-dia");
+    if (saved && days.some((d) => d.key === saved)) setSel(saved);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  function pick(key: string) {
+    setSel(key);
+    sessionStorage.setItem("apuestas-dia", key);
+  }
+
   const active = days.find((d) => d.key === sel) ?? days[0];
 
   return (
     <div>
       {/* Carrusel de pills de fechas */}
-      <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1 mb-4">
+      <div
+        role="tablist"
+        aria-label="Días de partidos"
+        className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1 mb-4"
+      >
         {days.map((d) => {
           const on = d.key === sel;
           const live = d.mode === "live";
           return (
             <button
               key={d.key}
-              onClick={() => setSel(d.key)}
-              className={`shrink-0 rounded-full px-3.5 py-2 text-sm font-bold border transition-colors ${
+              role="tab"
+              aria-selected={on}
+              onClick={() => pick(d.key)}
+              className={`shrink-0 min-h-[44px] rounded-full px-3.5 py-2 text-sm font-bold border transition-colors ${
                 on
                   ? "grad-brand text-white border-transparent shadow"
                   : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
@@ -48,12 +66,12 @@ export default function ApuestasCarousel({
             >
               <span className="capitalize">{d.label}</span>
               <span
-                className={`ml-2 rounded-full px-1.5 py-0.5 text-[0.65rem] font-bold ${
+                className={`ml-2 rounded-full px-1.5 py-0.5 text-xs font-bold ${
                   on
                     ? "bg-white/20"
                     : live
-                    ? "bg-red-100 text-red-600"
-                    : "bg-green-100 text-green-700"
+                    ? "bg-red-100 text-red-700"
+                    : "bg-green-100 text-green-800"
                 }`}
               >
                 {live ? "🔴 en juego" : "🎯 apostar"}
@@ -65,13 +83,13 @@ export default function ApuestasCarousel({
 
       {/* Contenido del día seleccionado */}
       {active.mode === "bet" ? (
-        <div className="space-y-3">
+        <div role="tabpanel" className="space-y-3">
           {active.matches.map((m) => (
             <MatchCard key={m.id} match={m} />
           ))}
         </div>
       ) : (
-        <div className="space-y-3">
+        <div role="tabpanel" className="space-y-3">
           <p className="text-xs text-gray-500">
             Estos partidos ya cerraron. Mira cómo apostó todo el mundo 👀
           </p>
@@ -94,8 +112,8 @@ function LiveCard({
   return (
     <div className="card p-4">
       <div className="flex items-center justify-between mb-3">
-        <span className="text-xs font-bold uppercase tracking-wide text-red-500">
-          🔴 En juego / por jugarse
+        <span className="text-xs font-bold uppercase tracking-wide text-red-600">
+          🔴 En juego
         </span>
         <span className="text-xs text-gray-500">🕓 {formatCl(m.kickoff_at)}</span>
       </div>
@@ -113,7 +131,7 @@ function LiveCard({
           <Flag team={m.away_team} /> {m.away_team}
         </span>
       </div>
-      <p className="text-center text-[0.7rem] text-gray-400 mt-1">
+      <p className="text-center text-xs text-gray-500 mt-1">
         {m.prediction ? "tu apuesta" : "no apostaste este partido"}
       </p>
 
