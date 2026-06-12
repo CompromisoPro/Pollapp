@@ -332,14 +332,23 @@ function MatchRow({ match }: { match: Match }) {
             <span className="text-gray-600">¿Borrar?</span>
             <button
               disabled={pending}
-              onClick={() => act(() => deleteMatch(match.id))}
+              onClick={() =>
+                act(async () => {
+                  const res = await deleteMatch(match.id);
+                  // Si falla, salimos del modo confirmación para no dejar la
+                  // fila atascada ni permitir un re-disparo accidental.
+                  if ("error" in res) setConfirmDel(false);
+                  return res;
+                })
+              }
               className="font-bold text-red-600 hover:underline"
             >
               Sí
             </button>
             <button
+              disabled={pending}
               onClick={() => setConfirmDel(false)}
-              className="text-gray-500 hover:underline"
+              className="text-gray-500 hover:underline disabled:opacity-50"
             >
               No
             </button>
