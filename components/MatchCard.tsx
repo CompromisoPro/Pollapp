@@ -141,7 +141,7 @@ export default function MatchCard({ match }: { match: MatchWithPrediction }) {
               +{pred.points ?? 0} pts
             </span>
           ) : (
-            <span className="ml-2 text-gray-400">No apostaste</span>
+            <span className="ml-2 text-gray-500">No apostaste</span>
           )}
         </div>
       )}

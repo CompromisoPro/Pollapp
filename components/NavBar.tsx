@@ -90,8 +90,8 @@ export default function NavBar({
                 key={href}
                 href={href}
                 aria-current={active ? "page" : undefined}
-                className={`flex flex-1 flex-col items-center justify-center gap-0.5 py-2 min-h-[3.25rem] text-[0.65rem] font-semibold leading-none transition-colors ${
-                  active ? "text-white" : "text-white/60"
+                className={`flex flex-1 flex-col items-center justify-center gap-0.5 py-2 min-h-[3.25rem] text-xs font-semibold leading-none transition-colors ${
+                  active ? "text-white" : "text-white/75"
                 }`}
               >
                 <span aria-hidden className="text-lg">

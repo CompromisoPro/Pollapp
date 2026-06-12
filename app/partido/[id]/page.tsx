@@ -37,7 +37,7 @@ export default async function PartidoPage({
 
   if (!match) {
     return (
-      <main className="flex-1 mx-auto w-full max-w-2xl px-3 py-10 text-center text-gray-400">
+      <main className="flex-1 mx-auto w-full max-w-2xl px-3 py-10 text-center text-gray-500">
         Partido no encontrado.{" "}
         <Link href="/apuestas" className="text-brand-600 underline">
           Volver
@@ -108,7 +108,7 @@ export default async function PartidoPage({
           </p>
         </div>
       ) : preds.length === 0 ? (
-        <div className="card p-8 text-center text-gray-400">
+        <div className="card p-8 text-center text-gray-500">
           Nadie apostó este partido.
         </div>
       ) : (
@@ -168,7 +168,7 @@ export default async function PartidoPage({
                             className={`pill ${
                               (p.points ?? 0) > 0
                                 ? "pill-pitch"
-                                : "bg-gray-100 text-gray-400"
+                                : "pill-mute"
                             }`}
                           >
                             {p.points ?? 0}

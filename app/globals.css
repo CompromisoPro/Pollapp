@@ -65,11 +65,10 @@ body {
 .grad-night {
   background-image: var(--grad-night);
 }
+/* Antes era gradient-text (background-clip). Ahora color sólido de marca:
+   mejor legibilidad y contraste AA; el énfasis lo da el peso del título. */
 .text-grad {
-  background-image: var(--grad-brand);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: var(--color-brand-700);
 }
 
 /* ---------- Tarjeta ---------- */
