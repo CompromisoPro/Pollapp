@@ -28,10 +28,14 @@ export default function ApuestasCarousel({
     () => (days.find((d) => d.mode === "bet") ?? days[0]).key
   );
 
-  // Recordar el día elegido entre navegaciones (sessionStorage), si sigue válido.
+  // Recordar el día elegido entre navegaciones (sessionStorage), pero solo si
+  // ese día SIGUE siendo apostable. Si ya cerró (pasó a 'live'), no lo
+  // restauramos: dejamos el default, que es el primer día apostable.
   useEffect(() => {
     const saved = sessionStorage.getItem("apuestas-dia");
-    if (saved && days.some((d) => d.key === saved)) setSel(saved);
+    if (saved && days.some((d) => d.key === saved && d.mode === "bet")) {
+      setSel(saved);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   function pick(key: string) {
