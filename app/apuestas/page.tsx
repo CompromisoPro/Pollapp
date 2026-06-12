@@ -35,6 +35,7 @@ export default async function PartidosPage() {
   //    espera de resultado, o ya finalizado con sus puntos).
   // Los partidos cerrados que NO apostaste no aparecen (ya no puedes hacer
   // nada con ellos); igual se ven en Fixture y en "Ver apuestas de todos".
+  // eslint-disable-next-line react-hooks/purity -- server component: hora del request
   const nowMs = Date.now();
   const enriched: MatchWithPrediction[] = matches
     .map((m) => ({ ...m, prediction: predByMatch.get(m.id) ?? null }))
