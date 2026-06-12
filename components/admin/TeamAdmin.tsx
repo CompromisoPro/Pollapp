@@ -54,10 +54,7 @@ export default function TeamAdmin({ teams }: { teams: Team[] }) {
             className="w-16 rounded-lg border border-gray-300 px-2 py-1.5 text-sm uppercase"
           />
         </label>
-        <button
-          disabled={pending}
-          className="rounded-lg bg-blue-600 text-white px-3 py-1.5 text-sm font-semibold hover:bg-blue-700 disabled:opacity-60"
-        >
+        <button disabled={pending} className="btn btn-primary px-3 py-1.5 text-sm">
           + Agregar
         </button>
       </form>
@@ -81,7 +78,7 @@ export default function TeamAdmin({ teams }: { teams: Team[] }) {
             >
               <strong>{t.name}</strong>
               {t.group_label && (
-                <span className="text-xs text-gray-400">G{t.group_label}</span>
+                <span className="text-xs text-gray-500">G{t.group_label}</span>
               )}
               <button
                 onClick={() => start(() => deleteTeam(t.id).then(() => {}))}

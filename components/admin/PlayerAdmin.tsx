@@ -81,7 +81,7 @@ export default function PlayerAdmin({
           >
             + Crear
           </button>
-          <p className="col-span-2 sm:col-span-4 text-xs text-gray-400">
+          <p className="col-span-2 sm:col-span-4 text-xs text-gray-500">
             Su contraseña será su RUT (o lo que escribas ahí, si no tiene RUT
             válido — mín. 6 caracteres). Queda con pago pendiente.
           </p>
@@ -125,7 +125,7 @@ export default function PlayerAdmin({
             ))}
             {players.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-3 py-8 text-center text-gray-400">
+                <td colSpan={5} className="px-3 py-8 text-center text-gray-500">
                   Aún no hay jugadores registrados.
                 </td>
               </tr>
@@ -175,7 +175,7 @@ function PlayerRow({
       <tr className="border-t border-gray-100">
         <td className="px-3 py-2">
           <div className="font-medium">{p.full_name ?? "—"}</div>
-          <div className="text-xs text-gray-400">{p.email}</div>
+          <div className="text-xs text-gray-500">{p.email}</div>
         </td>
         <td className="px-3 py-2 text-right font-bold">{p.points_total}</td>
         <td className="px-3 py-2 text-center">
@@ -208,7 +208,7 @@ function PlayerRow({
         <td className="px-3 py-2 text-center">
           <button
             onClick={onToggleEdit}
-            className="text-gray-400 hover:text-brand-600"
+            className="text-gray-500 hover:text-brand-600"
             title="Editar participante"
           >
             ✏️
@@ -261,7 +261,7 @@ function PlayerRow({
               </button>
             </div>
             {err && <p className="mt-1 text-xs text-red-600">{err}</p>}
-            <p className="mt-1 text-xs text-gray-400">
+            <p className="mt-1 text-xs text-gray-500">
               Si escribes algo en este campo, esa pasa a ser su contraseña (el
               RUT con guión, o una clave personalizada de mín. 6 caracteres).
               Déjalo igual para no cambiarla.

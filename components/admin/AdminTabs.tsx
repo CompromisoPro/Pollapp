@@ -21,10 +21,11 @@ export default function AdminTabs({
           <button
             key={t.id}
             onClick={() => setActive(t.id)}
+            aria-pressed={active === t.id}
             className={`flex-1 rounded-lg px-3 py-2 text-sm font-bold transition-colors ${
               active === t.id
                 ? "grad-brand text-white shadow"
-                : "text-gray-500 hover:bg-gray-50"
+                : "text-gray-600 hover:bg-gray-50"
             }`}
           >
             {t.label}
