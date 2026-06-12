@@ -97,7 +97,7 @@ export default function MatchCard({ match }: { match: MatchWithPrediction }) {
           {pred && (
             <span
               className={`ml-2 pill ${
-                (pred.points ?? 0) > 0 ? "pill-pitch" : "bg-gray-100 text-gray-500"
+                (pred.points ?? 0) > 0 ? "pill-pitch" : "pill-mute"
               }`}
             >
               +{pred.points ?? 0} pts
@@ -109,9 +109,9 @@ export default function MatchCard({ match }: { match: MatchWithPrediction }) {
       {/* Acciones cuando el partido está abierto */}
       {!isFinished && (
         <div className="mt-3 flex items-center justify-between gap-2">
-          <span className="text-xs text-gray-400">
+          <span className="text-xs text-gray-500">
             {isLocked ? (
-              <span className="text-red-500 font-medium">🔒 Cerrado</span>
+              <span className="text-red-600 font-medium">🔒 Cerrado</span>
             ) : (
               <>Cierra: {formatCl(match.lock_at)} hrs</>
             )}

@@ -74,7 +74,7 @@ export default function NavBar({
 
       {/* ---------- Barra inferior (mobile) ---------- */}
       <nav
-        aria-label="Navegación principal"
+        aria-label="Navegación inferior"
         className="md:hidden fixed bottom-0 inset-x-0 z-30 grad-night text-white border-t border-white/10 shadow-[0_-4px_16px_-8px_rgba(11,20,55,0.5)]"
       >
         <div

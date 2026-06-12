@@ -49,7 +49,7 @@ export default async function TablaPage() {
                     isMe ? "bg-blue-50" : ""
                   }`}
                 >
-                  <td className="px-3 py-2 text-gray-400 font-medium">
+                  <td className="px-3 py-2 text-gray-500 font-medium tabular-nums">
                     {medal(i)}
                   </td>
                   <td className="px-3 py-2 font-medium">
@@ -63,7 +63,7 @@ export default async function TablaPage() {
                       </span>
                     )}
                   </td>
-                  <td className="px-3 py-2 text-right font-bold">
+                  <td className="px-3 py-2 text-right font-bold tabular-nums">
                     {r.points_total}
                   </td>
                 </tr>
@@ -71,7 +71,7 @@ export default async function TablaPage() {
             })}
             {rows.length === 0 && (
               <tr>
-                <td colSpan={3} className="px-3 py-10 text-center text-gray-400">
+                <td colSpan={3} className="px-3 py-10 text-center text-gray-500">
                   Aún no hay jugadores.
                 </td>
               </tr>

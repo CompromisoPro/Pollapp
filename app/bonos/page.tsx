@@ -46,7 +46,7 @@ export default async function BonosPage() {
       />
 
       {questions.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-gray-300 p-10 text-center text-gray-400">
+        <div className="rounded-xl border border-dashed border-gray-300 p-10 text-center text-gray-500">
           Aún no hay bonos cargados.
         </div>
       ) : (

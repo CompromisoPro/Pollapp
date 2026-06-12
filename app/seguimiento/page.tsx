@@ -121,7 +121,7 @@ export default async function SeguimientoPage() {
   return (
     <main className="flex-1 mx-auto w-full max-w-3xl px-3 py-6">
       <PageHeader
-        title="Mi seguimiento"
+        title="Seguimiento"
         emoji="📈"
         subtitle="Cómo fuiste acumulando puntos, partido a partido y bono a bono."
       />
@@ -130,12 +130,12 @@ export default async function SeguimientoPage() {
       <div className="card p-4 mb-6 flex items-center justify-between">
         <span className="text-sm text-gray-500">Total acumulado</span>
         <span className="text-2xl font-extrabold text-brand-600">
-          {grandTotal} <span className="text-base font-semibold text-gray-400">pts</span>
+          {grandTotal} <span className="text-base font-semibold text-gray-500">pts</span>
         </span>
       </div>
 
       {withTotal.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-gray-300 p-10 text-center text-gray-400">
+        <div className="rounded-xl border border-dashed border-gray-300 p-10 text-center text-gray-500">
           Todavía no hay partidos finalizados con tus pronósticos. Vuelve cuando
           arranque el Mundial 👀
         </div>
@@ -152,7 +152,7 @@ export default async function SeguimientoPage() {
                       </p>
                       <p className="font-semibold leading-tight">
                         <Flag team={it.homeTeam!} /> {it.homeTeam}{" "}
-                        <span className="text-gray-400 font-normal">vs</span>{" "}
+                        <span className="text-gray-500 font-normal">vs</span>{" "}
                         <Flag team={it.awayTeam!} /> {it.awayTeam}
                       </p>
                       <p className="text-sm text-gray-500 mt-1">
@@ -186,21 +186,19 @@ export default async function SeguimientoPage() {
                       </p>
                     </>
                   )}
-                  <p className="text-xs text-gray-400 mt-1.5">
+                  <p className="text-xs text-gray-500 mt-1.5">
                     {formatCl(it.at, { weekday: "short", day: "numeric", month: "short" })}
                   </p>
                 </div>
 
                 <div className="text-right shrink-0">
                   <span
-                    className={`pill ${
-                      it.points > 0 ? "pill-pitch" : "bg-gray-100 text-gray-500"
-                    }`}
+                    className={`pill ${it.points > 0 ? "pill-pitch" : "pill-mute"}`}
                   >
                     +{it.points}
                   </span>
-                  <p className="text-xs text-gray-400 mt-1.5">
-                    acum. <strong className="text-gray-600">{it.total}</strong>
+                  <p className="text-xs text-gray-500 mt-1.5">
+                    acum. <strong className="text-gray-700">{it.total}</strong>
                   </p>
                 </div>
               </div>

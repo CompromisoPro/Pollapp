@@ -57,7 +57,7 @@ export default async function PartidosPage() {
       />
 
       {enriched.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-gray-300 p-10 text-center text-gray-400">
+        <div className="rounded-xl border border-dashed border-gray-300 p-10 text-center text-gray-500">
           Todavía no hay partidos disponibles. Vuelve pronto 👀
         </div>
       ) : (

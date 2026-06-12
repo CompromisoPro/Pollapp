@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import PageHeader from "@/components/PageHeader";
 import { computeStandings, type MatchResult } from "@/lib/standings";
+import { flagFor } from "@/lib/flags";
 import type { Team, Match } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -32,7 +33,7 @@ export default async function GruposPage() {
       />
 
       {groups.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-gray-300 p-10 text-center text-gray-400">
+        <div className="rounded-xl border border-dashed border-gray-300 p-10 text-center text-gray-500">
           Aún no se han cargado las selecciones. (Admin: corre fixtures.sql)
         </div>
       ) : (
@@ -62,13 +63,13 @@ export default async function GruposPage() {
                   Grupo {g}
                 </div>
                 <table className="w-full text-sm">
-                  <thead className="text-gray-400 text-xs">
+                  <thead className="text-gray-500 text-xs">
                     <tr>
                       <th className="px-2 py-1.5 text-left font-semibold">
                         Equipo
                       </th>
-                      <th className="px-1 py-1.5 w-7 text-center">PJ</th>
-                      <th className="px-1 py-1.5 w-7 text-center">DIF</th>
+                      <th className="px-1 py-1.5 w-7 text-center font-semibold">PJ</th>
+                      <th className="px-1 py-1.5 w-7 text-center font-semibold">DIF</th>
                       <th className="px-1 py-1.5 w-8 text-center font-bold">
                         PTS
                       </th>
@@ -84,21 +85,22 @@ export default async function GruposPage() {
                       >
                         <td className="px-2 py-1.5 font-medium">
                           <span
-                            className={`inline-block w-4 text-xs ${
-                              s.qualifies ? "text-pitch font-bold" : "text-gray-300"
+                            className={`inline-block w-4 text-xs tabular-nums ${
+                              s.qualifies ? "text-pitch font-bold" : "text-gray-400"
                             }`}
                           >
                             {s.rank}
                           </span>
+                          <span className="mr-1">{flagFor(s.team)}</span>
                           {s.team}
                         </td>
-                        <td className="px-1 py-1.5 text-center text-gray-500">
+                        <td className="px-1 py-1.5 text-center text-gray-600 tabular-nums">
                           {s.played}
                         </td>
-                        <td className="px-1 py-1.5 text-center text-gray-500">
+                        <td className="px-1 py-1.5 text-center text-gray-600 tabular-nums">
                           {s.gd > 0 ? `+${s.gd}` : s.gd}
                         </td>
-                        <td className="px-1 py-1.5 text-center font-bold">
+                        <td className="px-1 py-1.5 text-center font-bold tabular-nums">
                           {s.points}
                         </td>
                       </tr>

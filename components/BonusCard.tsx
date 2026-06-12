@@ -147,9 +147,7 @@ export default function BonusCard({
           </p>
           <p className="pt-0.5">
             <span
-              className={`pill ${
-                myPoints > 0 ? "pill-pitch" : "bg-gray-100 text-gray-500"
-              }`}
+              className={`pill ${myPoints > 0 ? "pill-pitch" : "pill-mute"}`}
             >
               {myPoints > 0 ? `✓ +${myPoints} pts` : "✗ +0 pts"}
             </span>
@@ -158,9 +156,9 @@ export default function BonusCard({
       )}
 
       <div className="mt-3 flex items-center justify-between gap-2">
-        <span className="text-xs text-gray-400">
+        <span className="text-xs text-gray-500">
           {isLocked ? (
-            <span className="text-red-500 font-medium">🔒 Cerrado</span>
+            <span className="text-red-600 font-medium">🔒 Cerrado</span>
           ) : (
             <>Cierra: {formatCl(question.deadline)} hrs</>
           )}
@@ -206,7 +204,7 @@ function TeamSelect({
 }) {
   if (teams.length === 0) {
     return (
-      <span className="text-xs text-gray-400 italic">
+      <span className="text-xs text-gray-500 italic">
         (El admin aún no cargó las selecciones)
       </span>
     );

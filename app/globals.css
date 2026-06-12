@@ -46,6 +46,18 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Respeta la preferencia de movimiento reducido del sistema. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 /* ---------- Utilidades de marca ---------- */
 .grad-brand {
   background-image: var(--grad-brand);
@@ -141,4 +153,8 @@ body {
 .pill-pitch {
   background: rgba(22, 163, 74, 0.14);
   color: #15803d;
+}
+.pill-mute {
+  background: rgba(15, 23, 42, 0.06);
+  color: #475569; /* slate-600: contraste AA sobre la píldora */
 }
