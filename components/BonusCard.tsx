@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import type { BonusQuestion, BonusAnswer, Team } from "@/lib/types";
-import { saveBonusAnswer } from "@/app/bonos/actions";
+import { saveBonusAnswer } from "@/app/apuestas/bonos/actions";
 import { formatCl } from "@/lib/time";
 import { useNow } from "@/lib/useNow";
 

@@ -6,10 +6,9 @@ import { Logo } from "@/components/Logo";
 
 // orden de la navegación principal (acción primero, consulta después).
 const LINKS = [
-  ["/apuestas", "Apuestas", "⚽"],
+  ["/apuestas", "Apuestas", "🎯"],
   ["/fixture", "Fixture", "📅"],
   ["/grupos", "Grupos", "📊"],
-  ["/bonos", "Bonos", "🎯"],
   ["/tabla", "Tabla", "🏆"],
   ["/seguimiento", "Seguimiento", "📈"],
 ] as const;
@@ -32,18 +31,18 @@ export default function NavBar({
       <header className="grad-night text-white sticky top-0 z-30 shadow-lg shadow-indigo-900/20">
         <nav
           aria-label="Navegación principal"
-          className="mx-auto max-w-3xl flex items-center gap-1 px-3 h-14"
+          className="mx-auto max-w-5xl flex items-center gap-2 px-4 h-14"
         >
           <Link
             href="/apuestas"
             aria-label="Inicio"
-            className="mr-1 shrink-0 text-white"
+            className="mr-2 shrink-0 text-white"
           >
             <Logo size={30} />
           </Link>
 
           {/* Links visibles solo en desktop; en mobile va la barra inferior */}
-          <div className="hidden md:flex items-center gap-0.5 ml-1">
+          <div className="hidden md:flex items-center gap-1.5">
             {links.map(([href, label, icon]) => (
               <NavLink
                 key={href}
@@ -55,7 +54,7 @@ export default function NavBar({
             ))}
           </div>
 
-          <div className="ml-auto flex items-center gap-2.5">
+          <div className="ml-auto flex items-center gap-3 md:border-l md:border-white/15 md:pl-4">
             <span className="inline-flex items-center gap-1 rounded-full bg-white/10 px-2.5 py-1 text-sm font-bold">
               <span className="text-[color:var(--color-gold)]">★</span>
               {points}

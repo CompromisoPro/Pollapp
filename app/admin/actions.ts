@@ -243,7 +243,7 @@ export async function saveMatchResult(
     revalidatePath("/apuestas");
     revalidatePath("/tabla");
     revalidatePath("/grupos");
-    revalidatePath("/bonos");
+    revalidatePath("/apuestas/bonos");
     return { ok: true };
   } catch (e) {
     return fail(e);
@@ -266,7 +266,7 @@ export async function addTeam(formData: FormData): Promise<Result> {
       .upsert({ id, name, group_label: group || null });
     if (error) return { error: error.message };
     revalidatePath("/admin");
-    revalidatePath("/bonos");
+    revalidatePath("/apuestas/bonos");
     return { ok: true };
   } catch (e) {
     return fail(e);
@@ -280,7 +280,7 @@ export async function deleteTeam(id: string): Promise<Result> {
     const { error } = await admin.from("teams").delete().eq("id", id);
     if (error) return { error: error.message };
     revalidatePath("/admin");
-    revalidatePath("/bonos");
+    revalidatePath("/apuestas/bonos");
     return { ok: true };
   } catch (e) {
     return fail(e);
@@ -334,7 +334,7 @@ export async function saveBonusOfficial(
 
     await recomputeAllTotals(admin);
     revalidatePath("/admin");
-    revalidatePath("/bonos");
+    revalidatePath("/apuestas/bonos");
     revalidatePath("/tabla");
     return { ok: true };
   } catch (e) {

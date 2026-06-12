@@ -41,6 +41,6 @@ export async function saveBonusAnswer(
     };
   }
 
-  revalidatePath("/bonos");
+  revalidatePath("/apuestas/bonos");
   return { ok: true };
 }

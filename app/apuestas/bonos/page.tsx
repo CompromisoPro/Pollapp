@@ -1,6 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
 import BonusCard from "@/components/BonusCard";
-import PageHeader from "@/components/PageHeader";
 import type { BonusQuestion, BonusAnswer, Team } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -37,41 +36,31 @@ export default async function BonosPage() {
     questions.some((q) => q.phase === ph)
   );
 
-  return (
-    <main className="flex-1 mx-auto w-full max-w-3xl px-3 py-6">
-      <PageHeader
-        title="Bonos"
-        emoji="🎯"
-        subtitle="Pronósticos especiales por fase. Cada uno tiene su propia fecha de cierre."
-      />
-
-      {questions.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-gray-300 p-10 text-center text-gray-500">
-          Aún no hay bonos cargados.
-        </div>
-      ) : (
-        <div className="space-y-8">
-          {phases.map((ph) => (
-            <section key={ph}>
-              <h2 className="text-sm font-bold uppercase tracking-wide text-gray-500 mb-3">
-                {PHASE_TITLES[ph]}
-              </h2>
-              <div className="space-y-3">
-                {questions
-                  .filter((q) => q.phase === ph)
-                  .map((q) => (
-                    <BonusCard
-                      key={q.id}
-                      question={q}
-                      answer={ansByQ.get(q.id) ?? null}
-                      teams={teams}
-                    />
-                  ))}
-              </div>
-            </section>
-          ))}
-        </div>
-      )}
-    </main>
+  return questions.length === 0 ? (
+    <div className="rounded-xl border border-dashed border-gray-300 p-10 text-center text-gray-500">
+      Aún no hay bonos cargados.
+    </div>
+  ) : (
+    <div className="space-y-8">
+      {phases.map((ph) => (
+        <section key={ph}>
+          <h2 className="text-sm font-bold uppercase tracking-wide text-gray-500 mb-3">
+            {PHASE_TITLES[ph]}
+          </h2>
+          <div className="space-y-3">
+            {questions
+              .filter((q) => q.phase === ph)
+              .map((q) => (
+                <BonusCard
+                  key={q.id}
+                  question={q}
+                  answer={ansByQ.get(q.id) ?? null}
+                  teams={teams}
+                />
+              ))}
+          </div>
+        </section>
+      ))}
+    </div>
   );
 }

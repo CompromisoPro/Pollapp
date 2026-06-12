@@ -1,6 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
 import MatchCard from "@/components/MatchCard";
-import PageHeader from "@/components/PageHeader";
 import type { Match, Prediction, MatchWithPrediction } from "@/lib/types";
 import { formatCl } from "@/lib/time";
 
@@ -48,34 +47,24 @@ export default async function PartidosPage() {
     groups.get(key)!.push(m);
   }
 
-  return (
-    <main className="flex-1 mx-auto w-full max-w-3xl px-3 py-6">
-      <PageHeader
-        title="Apuestas"
-        emoji="⚽"
-        subtitle="Pon tu marcador. Cierra a las 23:59 (Chile) del día anterior a cada partido."
-      />
-
-      {enriched.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-gray-300 p-10 text-center text-gray-500">
-          Todavía no hay partidos disponibles. Vuelve pronto 👀
-        </div>
-      ) : (
-        <div className="space-y-8">
-          {[...groups.entries()].map(([day, dayMatches]) => (
-            <section key={day}>
-              <h2 className="text-sm font-bold uppercase tracking-wide text-gray-500 mb-3 capitalize">
-                {day}
-              </h2>
-              <div className="space-y-3">
-                {dayMatches.map((m) => (
-                  <MatchCard key={m.id} match={m} />
-                ))}
-              </div>
-            </section>
-          ))}
-        </div>
-      )}
-    </main>
+  return enriched.length === 0 ? (
+    <div className="rounded-xl border border-dashed border-gray-300 p-10 text-center text-gray-500">
+      Todavía no hay partidos disponibles. Vuelve pronto 👀
+    </div>
+  ) : (
+    <div className="space-y-8">
+      {[...groups.entries()].map(([day, dayMatches]) => (
+        <section key={day}>
+          <h2 className="text-sm font-bold uppercase tracking-wide text-gray-500 mb-3 capitalize">
+            {day}
+          </h2>
+          <div className="space-y-3">
+            {dayMatches.map((m) => (
+              <MatchCard key={m.id} match={m} />
+            ))}
+          </div>
+        </section>
+      ))}
+    </div>
   );
 }
