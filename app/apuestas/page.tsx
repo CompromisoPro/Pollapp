@@ -29,24 +29,20 @@ export default async function PartidosPage() {
     predByMatch.set(p.match_id, p);
   }
 
-  // Qué mostrar en /apuestas (el cierre real es por lock_at, no por status:
-  // un partido sigue 'abierto' aunque su plazo ya venció, hasta que el admin
-  // carga el resultado y lo pasa a 'finalizado'):
-  //  - partidos que AÚN se pueden apostar (status 'abierto' y plazo vigente), y
-  //  - partidos que YA cerraron el plazo pero SIN resultado oficial, SOLO si
-  //    apostaste (para ver tu apuesta "esperando resultado").
-  // Los 'finalizado' (con resultado) salen de aquí: se ven en Fixture y en
-  // "Ver apuestas de todos".
+  // Qué mostrar en /apuestas:
+  //  - los partidos que AÚN puedes apostar (abierto y plazo vigente), y
+  //  - TODOS los partidos que apostaste, en cualquier estado (cerrado a la
+  //    espera de resultado, o ya finalizado con sus puntos).
+  // Los partidos cerrados que NO apostaste no aparecen (ya no puedes hacer
+  // nada con ellos); igual se ven en Fixture y en "Ver apuestas de todos".
   const nowMs = Date.now();
   const enriched: MatchWithPrediction[] = matches
     .map((m) => ({ ...m, prediction: predByMatch.get(m.id) ?? null }))
     .filter((m) => {
-      if (m.status === "finalizado") return false;
+      if (m.prediction !== null) return true; // lo aposté: siempre lo veo
       const stillOpen =
         m.status === "abierto" && nowMs < new Date(m.lock_at).getTime();
-      if (stillOpen) return true;
-      // cerrado (plazo vencido) sin resultado: solo si aposté
-      return m.prediction !== null;
+      return stillOpen; // sin apostar: solo si todavía se puede apostar
     });
 
   // Agrupar por día (hora Chile).
