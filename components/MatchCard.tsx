@@ -88,9 +88,26 @@ export default function MatchCard({ match }: { match: MatchWithPrediction }) {
         </span>
       </div>
 
-      {/* Cerrado SIN resultado todavía: mostramos tu apuesta, a la espera. */}
+      {/* Abierto: aún se puede apostar. Botón + hora de cierre. */}
+      {!isFinished && !isLocked && (
+        <div className="mt-3 flex items-center justify-between gap-2">
+          <span className="text-xs text-gray-500">
+            Cierra: {formatCl(match.lock_at)} hrs
+          </span>
+          <button
+            onClick={onSave}
+            disabled={pending}
+            className="btn btn-primary px-3 py-1.5 text-xs"
+          >
+            {pending ? "Guardando…" : pred ? "Actualizar" : "Guardar"}
+          </button>
+        </div>
+      )}
+
+      {/* Cerrado sin resultado aún: tu apuesta + a la espera, en una línea. */}
       {isLocked && !isFinished && (
         <div className="mt-3 text-center text-sm text-gray-500">
+          🔒{" "}
           {pred ? (
             <>
               Tu apuesta:{" "}
@@ -98,19 +115,22 @@ export default function MatchCard({ match }: { match: MatchWithPrediction }) {
                 {pred.home_score}-{pred.away_score}
               </strong>
               <span className="mx-1.5 text-gray-300">·</span>
-              esperando resultado oficial
+              esperando resultado
             </>
           ) : (
-            <span className="text-gray-400">No apostaste este partido.</span>
+            <span>No apostaste este partido.</span>
           )}
         </div>
       )}
 
-      {/* Resultado oficial + puntos cuando el partido terminó */}
+      {/* Finalizado: resultado oficial + tus puntos. */}
       {isFinished && match.home_score !== null && (
         <div className="mt-3 text-center text-sm">
           <span className="text-gray-500">
-            Resultado oficial: <strong>{match.home_score}-{match.away_score}</strong>
+            Resultado oficial:{" "}
+            <strong>
+              {match.home_score}-{match.away_score}
+            </strong>
           </span>
           {pred ? (
             <span
@@ -126,29 +146,6 @@ export default function MatchCard({ match }: { match: MatchWithPrediction }) {
         </div>
       )}
 
-      {/* Acciones cuando el partido está abierto */}
-      {!isFinished && (
-        <div className="mt-3 flex items-center justify-between gap-2">
-          <span className="text-xs text-gray-500">
-            {isLocked ? (
-              <span className="text-red-600 font-medium">🔒 Cerrado</span>
-            ) : (
-              <>Cierra: {formatCl(match.lock_at)} hrs</>
-            )}
-          </span>
-
-          {!isLocked && (
-            <button
-              onClick={onSave}
-              disabled={pending}
-              className="btn btn-primary px-3 py-1.5 text-xs"
-            >
-              {pending ? "Guardando…" : pred ? "Actualizar" : "Guardar"}
-            </button>
-          )}
-        </div>
-      )}
-
       {msg && (
         <p
           className={`mt-2 text-xs ${
@@ -159,7 +156,7 @@ export default function MatchCard({ match }: { match: MatchWithPrediction }) {
         </p>
       )}
 
-      {/* Ver apuestas de todos: solo cuando ya cerró el plazo */}
+      {/* Ver apuestas de todos: se revela apenas cierra el plazo. */}
       {isLocked && (
         <div className="mt-3 border-t border-gray-100 pt-2 text-center">
           <Link
