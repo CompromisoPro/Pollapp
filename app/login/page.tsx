@@ -8,6 +8,7 @@ import { canonicalRut } from "@/lib/rut";
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPass, setShowPass] = useState(false);
   const [rut, setRut] = useState("");
   const [foundEmail, setFoundEmail] = useState("");
   const [mode, setMode] = useState<"pass" | "forgot">("pass");
@@ -158,6 +159,8 @@ export default function LoginPage() {
               </label>
               <input
                 type="email"
+                name="email"
+                autoComplete="username"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -169,14 +172,26 @@ export default function LoginPage() {
               <label className="block text-sm font-semibold mb-1">
                 Contraseña (tu RUT)
               </label>
-              <input
-                type="text"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="12345678-9"
-                className="field w-full px-3 py-2.5 text-sm"
-              />
+              <div className="relative">
+                <input
+                  type={showPass ? "text" : "password"}
+                  name="password"
+                  autoComplete="current-password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="12345678-9"
+                  className="field w-full px-3 py-2.5 pr-10 text-sm"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPass(!showPass)}
+                  aria-label={showPass ? "Ocultar contraseña" : "Mostrar contraseña"}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  {showPass ? "🙈" : "👁️"}
+                </button>
+              </div>
               <p className="text-xs text-gray-400 mt-1">
                 Tu contraseña es tu RUT con guión (ej. 12345678-9).
               </p>
