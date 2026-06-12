@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { LogoMark } from "@/components/Logo";
 import { buscarCorreoPorRut } from "@/app/login/actions";
 import { canonicalRut } from "@/lib/rut";
 
@@ -73,13 +72,19 @@ export default function LoginPage() {
 
       <div className="w-full max-w-sm relative">
         <div className="text-center mb-8 text-white">
-          <div className="flex justify-center mb-3">
-            <LogoMark size={64} />
+          <div className="flex justify-center mb-4">
+            {/* Emblema oficial Mundial 2026 — uso de fans, grupo privado */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/mundial26.svg"
+              alt="Mundial 2026"
+              className="h-36 w-auto drop-shadow-[0_12px_24px_rgba(0,0,0,0.35)]"
+            />
           </div>
           <h1 className="text-4xl font-black tracking-tight">
             Poll<span className="text-amber-300">app</span>
           </h1>
-          <p className="text-sm text-white/70 mt-1 font-medium">
+          <p className="text-sm text-white/80 mt-1 font-medium">
             Polla Mundialera 2026 ⚽
           </p>
         </div>
