@@ -72,7 +72,7 @@ export default function PlayerAdmin({
           />
           <input
             name="rut"
-            placeholder="RUT (12345678-9)"
+            placeholder="RUT o contraseña"
             className="field px-2 py-1.5 text-sm"
           />
           <button
@@ -82,8 +82,8 @@ export default function PlayerAdmin({
             + Crear
           </button>
           <p className="col-span-2 sm:col-span-4 text-xs text-gray-400">
-            Su contraseña será su RUT. Queda con pago pendiente hasta que lo
-            marques.
+            Su contraseña será su RUT (o lo que escribas ahí, si no tiene RUT
+            válido — mín. 6 caracteres). Queda con pago pendiente.
           </p>
         </form>
       </details>
@@ -238,7 +238,7 @@ function PlayerRow({
                 />
               </label>
               <label className="text-xs text-gray-500 flex flex-col">
-                RUT (= contraseña)
+                RUT o contraseña
                 <input
                   value={rut}
                   onChange={(e) => setRut(e.target.value)}
@@ -262,7 +262,9 @@ function PlayerRow({
             </div>
             {err && <p className="mt-1 text-xs text-red-600">{err}</p>}
             <p className="mt-1 text-xs text-gray-400">
-              Si cambias el RUT, su contraseña pasa a ser el RUT nuevo.
+              Si escribes algo en este campo, esa pasa a ser su contraseña (el
+              RUT con guión, o una clave personalizada de mín. 6 caracteres).
+              Déjalo igual para no cambiarla.
             </p>
           </td>
         </tr>

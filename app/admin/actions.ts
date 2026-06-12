@@ -445,8 +445,24 @@ export async function setAdmin(
 }
 
 /**
+ * Resuelve la contraseña a partir del campo "RUT / contraseña":
+ *  - si parece un RUT (canónico de 7+ chars) -> usa el RUT canónico
+ *  - si no, lo usa tal cual como contraseña personalizada (mín. 6 chars)
+ *  - si es muy corto -> null (el llamador avisa el error, no lo ignora)
+ */
+function resolvePassword(value: string): string | null {
+  const v = value.trim();
+  if (!v) return null;
+  const canon = canonicalRut(v);
+  if (canon.length >= 7) return canon; // parece un RUT real
+  if (v.length >= 6) return v; // contraseña personalizada (ej. Bruno)
+  return null;
+}
+
+/**
  * Crea un participante nuevo: usuario de auth (correo confirmado, sin enviar
- * email) con contraseña = su RUT, y completa su perfil (nombre + RUT).
+ * email) con contraseña = su RUT (o una clave personalizada), y completa su
+ * perfil (nombre + RUT).
  */
 export async function createPlayer(formData: FormData): Promise<Result> {
   try {
@@ -455,10 +471,10 @@ export async function createPlayer(formData: FormData): Promise<Result> {
     const email = String(formData.get("email") || "").trim().toLowerCase();
     const rut = String(formData.get("rut") || "").trim();
     if (!name || !email || !rut)
-      return { error: "Completa nombre, correo y RUT." };
-    const pass = canonicalRut(rut);
-    if (pass.length < 7)
-      return { error: "RUT inválido (debe ser el RUT completo, con dígito verificador)." };
+      return { error: "Completa nombre, correo y RUT/contraseña." };
+    const pass = resolvePassword(rut);
+    if (!pass)
+      return { error: "El RUT/contraseña es muy corto (mínimo 6 caracteres)." };
 
     const admin = createAdminClient();
     const { data, error } = await admin.auth.admin.createUser({
@@ -500,10 +516,16 @@ export async function updatePlayer(
 
     const admin = createAdminClient();
 
-    // Auth: correo y (si el RUT es válido) contraseña = RUT.
+    // Auth: correo y (si se ingresó RUT/contraseña) la nueva clave.
     const authUpdate: { email: string; password?: string } = { email };
-    const pass = canonicalRut(rut);
-    if (rut && pass.length >= 7) authUpdate.password = pass;
+    if (rut) {
+      const pass = resolvePassword(rut);
+      if (!pass)
+        return {
+          error: "El RUT/contraseña es muy corto (mínimo 6 caracteres).",
+        };
+      authUpdate.password = pass;
+    }
     const { error: authErr } = await admin.auth.admin.updateUserById(
       userId,
       authUpdate
