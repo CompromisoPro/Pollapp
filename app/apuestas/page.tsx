@@ -29,22 +29,16 @@ export default async function PartidosPage() {
     predByMatch.set(p.match_id, p);
   }
 
-  // Qué mostrar en /apuestas:
-  //  - los partidos que AÚN puedes apostar (abierto y plazo vigente), y
-  //  - TODOS los partidos que apostaste, en cualquier estado (cerrado a la
-  //    espera de resultado, o ya finalizado con sus puntos).
-  // Los partidos cerrados que NO apostaste no aparecen (ya no puedes hacer
-  // nada con ellos); igual se ven en Fixture y en "Ver apuestas de todos".
+  // /apuestas muestra SOLO lo accionable: partidos abiertos cuyo plazo sigue
+  // vigente. Lo ya cerrado/jugado vive en Mundial (fixture, hoy) y Resultados,
+  // así esta página se mantiene corta durante todo el torneo.
   // eslint-disable-next-line react-hooks/purity -- server component: hora del request
   const nowMs = Date.now();
   const enriched: MatchWithPrediction[] = matches
     .map((m) => ({ ...m, prediction: predByMatch.get(m.id) ?? null }))
-    .filter((m) => {
-      if (m.prediction !== null) return true; // lo aposté: siempre lo veo
-      const stillOpen =
-        m.status === "abierto" && nowMs < new Date(m.lock_at).getTime();
-      return stillOpen; // sin apostar: solo si todavía se puede apostar
-    });
+    .filter(
+      (m) => m.status === "abierto" && nowMs < new Date(m.lock_at).getTime()
+    );
 
   // Agrupar por día (hora Chile).
   const groups = new Map<string, MatchWithPrediction[]>();
@@ -60,7 +54,15 @@ export default async function PartidosPage() {
 
   return enriched.length === 0 ? (
     <div className="rounded-xl border border-dashed border-gray-300 p-10 text-center text-gray-500">
-      Todavía no hay partidos disponibles. Vuelve pronto 👀
+      <p className="text-3xl mb-2">⏳</p>
+      <p className="font-semibold text-gray-600">
+        No hay partidos abiertos para apostar ahora mismo.
+      </p>
+      <p className="text-sm mt-1">
+        Cada día se abre la jornada siguiente. Mientras tanto, mira tus apuestas
+        cerradas en <strong>Mundial</strong> y el ranking en{" "}
+        <strong>Resultados</strong>. 👀
+      </p>
     </div>
   ) : (
     <div className="space-y-8">
