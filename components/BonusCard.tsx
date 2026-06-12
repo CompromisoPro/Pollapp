@@ -5,6 +5,9 @@ import type { BonusQuestion, BonusAnswer, Team } from "@/lib/types";
 import { saveBonusAnswer } from "@/app/apuestas/bonos/actions";
 import { formatCl } from "@/lib/time";
 import { useNow } from "@/lib/useNow";
+import SaveButton from "@/components/ui/SaveButton";
+import SaveMessage from "@/components/ui/SaveMessage";
+import StatusBadge from "@/components/ui/StatusBadge";
 
 export default function BonusCard({
   question,
@@ -137,13 +140,13 @@ export default function BonusCard({
         <div className="mt-3 rounded-lg bg-gray-50 p-3 text-sm space-y-1">
           <p className="text-gray-500">
             Tu apuesta:{" "}
-            <strong className="text-gray-700">
+            <strong className="text-gray-700 tabular-nums">
               {answer ? fmt(answer.answer) : "— (no apostaste)"}
             </strong>
           </p>
           <p className="text-gray-500">
             Resultado oficial:{" "}
-            <strong className="text-gray-700">{fmt(question.official_answer)}</strong>
+            <strong className="text-gray-700 tabular-nums">{fmt(question.official_answer)}</strong>
           </p>
           <p className="pt-0.5">
             <span
@@ -156,37 +159,23 @@ export default function BonusCard({
       )}
 
       <div className="mt-3 flex items-center justify-between gap-2">
-        <span className="text-xs text-gray-500">
+        <span className="flex items-center gap-2 text-xs text-gray-500">
           {isLocked ? (
-            <span className="text-red-600 font-medium">🔒 Cerrado</span>
+            <StatusBadge status="cerrado" />
           ) : (
             <>Cierra: {formatCl(question.deadline)} hrs</>
           )}
           {!resolved && answer?.points != null && (
-            <span className="ml-2 pill pill-pitch">+{answer.points} pts</span>
+            <span className="pill pill-pitch">+{answer.points} pts</span>
           )}
         </span>
 
         {!isLocked && (
-          <button
-            onClick={onSave}
-            disabled={pending}
-            className="btn btn-primary px-3 py-1.5 text-xs"
-          >
-            {pending ? "Guardando…" : answer ? "Actualizar" : "Guardar"}
-          </button>
+          <SaveButton pending={pending} isEditing={!!answer} onClick={onSave} />
         )}
       </div>
 
-      {msg && (
-        <p
-          className={`mt-2 text-xs ${
-            msg.startsWith("✓") ? "text-green-600" : "text-red-600"
-          }`}
-        >
-          {msg}
-        </p>
-      )}
+      <SaveMessage msg={msg} />
     </div>
   );
 }

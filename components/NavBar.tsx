@@ -15,9 +15,12 @@ const LINKS = [
 export default function NavBar({
   isAdmin,
   points,
+  rank,
 }: {
   isAdmin: boolean;
   points: number;
+  /** Puesto en el ranking (1 = líder). */
+  rank: number;
 }) {
   const path = usePathname();
   const links = isAdmin
@@ -27,7 +30,7 @@ export default function NavBar({
   return (
     <>
       {/* ---------- Barra superior ---------- */}
-      <header className="grad-night text-white sticky top-0 z-30 shadow-lg shadow-indigo-900/20">
+      <header className="grad-night text-white sticky top-0 z-30 shadow-sm">
         <nav
           aria-label="Navegación principal"
           className="mx-auto max-w-5xl flex items-center gap-2 px-4 h-14"
@@ -55,8 +58,9 @@ export default function NavBar({
 
           <div className="ml-auto flex items-center gap-3 md:border-l md:border-white/15 md:pl-4">
             <OnlineCount />
-            <span className="inline-flex items-center gap-1 rounded-full bg-white/10 px-2.5 py-1 text-sm font-bold">
-              <span className="text-[color:var(--color-gold)]">★</span>
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-2.5 py-1 text-sm font-bold tabular-nums">
+              <span className="text-[color:var(--color-gold)]">#{rank}</span>
+              <span aria-hidden className="text-white/30">·</span>
               {points}
               <span className="hidden sm:inline text-white/70 font-medium">
                 pts
@@ -76,7 +80,7 @@ export default function NavBar({
       {/* ---------- Barra inferior (mobile) ---------- */}
       <nav
         aria-label="Navegación inferior"
-        className="md:hidden fixed bottom-0 inset-x-0 z-30 grad-night text-white shadow-[0_-4px_16px_-8px_rgba(11,20,55,0.5)]"
+        className="md:hidden fixed bottom-0 inset-x-0 z-30 grad-night text-white shadow-[0_-2px_8px_-4px_rgba(11,20,55,0.4)]"
       >
         <div aria-hidden className="h-0.5 stripe-mundial" />
         <div

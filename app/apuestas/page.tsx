@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import ApuestasCarousel, { type ApuestaDay } from "@/components/ApuestasCarousel";
+import EmptyState from "@/components/ui/EmptyState";
 import type { Match, Prediction, MatchWithPrediction } from "@/lib/types";
 import { formatCl, santiagoDateParts } from "@/lib/time";
 
@@ -88,17 +89,10 @@ export default async function PartidosPage() {
 
   if (days.length === 0) {
     return (
-      <div className="rounded-xl border border-dashed border-gray-300 p-10 text-center text-gray-500">
-        <p className="text-3xl mb-2">⏳</p>
-        <p className="font-semibold text-gray-600">
-          No hay partidos abiertos para apostar ahora mismo.
-        </p>
-        <p className="text-sm mt-1">
-          Cada día se abre la jornada siguiente. Mientras tanto, mira el ranking
-          en <strong>Resultados</strong> y el calendario en{" "}
-          <strong>Mundial</strong>. 👀
-        </p>
-      </div>
+      <EmptyState emoji="⏳" title="No hay partidos abiertos para apostar ahora mismo.">
+        Cada día se abre la jornada siguiente. Mientras tanto, mira el ranking en{" "}
+        <strong>Resultados</strong> y el calendario en <strong>Mundial</strong>. 👀
+      </EmptyState>
     );
   }
 

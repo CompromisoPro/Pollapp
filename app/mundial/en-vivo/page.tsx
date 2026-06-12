@@ -2,6 +2,8 @@ import { createClient } from "@/lib/supabase/server";
 import { Flag } from "@/components/Flag";
 import { formatCl, santiagoDateParts } from "@/lib/time";
 import type { Match } from "@/lib/types";
+import EmptyState from "@/components/ui/EmptyState";
+import StatusBadge from "@/components/ui/StatusBadge";
 
 export const dynamic = "force-dynamic";
 
@@ -35,9 +37,9 @@ export default async function EnVivoPage() {
       </p>
 
       {todayMatches.length === 0 ? (
-        <div className="card p-10 text-center text-gray-500">
-          Hoy no hay partidos 😴 Revisa el fixture para ver los próximos.
-        </div>
+        <EmptyState emoji="😴" title="Hoy no hay partidos">
+          Revisa el fixture para ver los próximos.
+        </EmptyState>
       ) : (
         <div className="space-y-3">
           {todayMatches.map((m) => (
@@ -61,11 +63,11 @@ function LiveRow({ match: m, now }: { match: Match; now: number }) {
     <div className="card p-4">
       <div className="flex items-center justify-between gap-2 mb-2 text-xs">
         {live ? (
-          <span className="inline-flex items-center gap-1.5 font-bold text-[#E4002B]">
-            <span className="dot-live" /> EN JUEGO
+          <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-red-600">
+            <span className="dot-live" /> En juego
           </span>
         ) : finished ? (
-          <span className="pill pill-pitch">Finalizado</span>
+          <StatusBadge status="finalizado" />
         ) : upcoming ? (
           <span className="pill pill-mute">
             Hoy {formatCl(m.kickoff_at, { hour: "2-digit", minute: "2-digit" })} hrs

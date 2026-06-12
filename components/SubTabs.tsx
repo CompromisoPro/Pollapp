@@ -14,7 +14,7 @@ export default function SubTabs({
   return (
     <nav
       aria-label="Secciones de apuestas"
-      className="inline-flex rounded-xl bg-gray-100 p-1 mb-6"
+      className="inline-flex rounded-xl bg-gray-100 p-1 mb-5"
     >
       {tabs.map((t) => {
         const active = path === t.href;
@@ -23,7 +23,7 @@ export default function SubTabs({
             key={t.href}
             href={t.href}
             aria-current={active ? "page" : undefined}
-            className={`rounded-lg px-4 py-1.5 text-sm font-semibold transition-colors ${
+            className={`rounded-lg px-5 py-2 text-[15px] font-bold transition-colors ${
               active
                 ? "bg-white text-brand-700 shadow-sm"
                 : "text-gray-500 hover:text-gray-700"
