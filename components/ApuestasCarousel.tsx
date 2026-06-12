@@ -34,8 +34,8 @@ export default function ApuestasCarousel({
   // Se lee tras montar (SSR no conoce sessionStorage), por eso el setState aquí.
   useEffect(() => {
     const saved = sessionStorage.getItem("apuestas-dia");
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (saved && days.some((d) => d.key === saved && d.mode === "bet")) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSel(saved);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
