@@ -67,13 +67,16 @@ export default function NavBar({
             </form>
           </div>
         </nav>
+        {/* Franja de bloques de color estilo Mundial 26 */}
+        <div aria-hidden className="h-1 stripe-mundial" />
       </header>
 
       {/* ---------- Barra inferior (mobile) ---------- */}
       <nav
         aria-label="Navegación inferior"
-        className="md:hidden fixed bottom-0 inset-x-0 z-30 grad-night text-white border-t border-white/10 shadow-[0_-4px_16px_-8px_rgba(11,20,55,0.5)]"
+        className="md:hidden fixed bottom-0 inset-x-0 z-30 grad-night text-white shadow-[0_-4px_16px_-8px_rgba(11,20,55,0.5)]"
       >
+        <div aria-hidden className="h-0.5 stripe-mundial" />
         <div
           className="mx-auto flex max-w-3xl items-stretch"
           style={{ paddingBottom: "env(safe-area-inset-bottom)" }}

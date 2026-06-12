@@ -4,6 +4,7 @@ import SubTabs from "@/components/SubTabs";
 const TABS = [
   { href: "/mundial", label: "Fixture", emoji: "📅" },
   { href: "/mundial/grupos", label: "Grupos", emoji: "📊" },
+  { href: "/mundial/en-vivo", label: "Hoy", emoji: "🔴" },
 ];
 
 export default function MundialLayout({

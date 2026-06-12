@@ -136,6 +136,39 @@ body {
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
 }
 
+/* ---------- Acentos "Mundial 26" (bloques de color de la identidad) ---------- */
+.stripe-mundial {
+  background: linear-gradient(
+    90deg,
+    #6d28d9 0%,
+    #6d28d9 25%,
+    #e4002b 25%,
+    #e4002b 50%,
+    #f59e0b 50%,
+    #f59e0b 75%,
+    #00a859 75%,
+    #00a859 100%
+  );
+}
+
+@keyframes pulse-live {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+.dot-live {
+  display: inline-block;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 999px;
+  background: #e4002b;
+  animation: pulse-live 1.4s ease-in-out infinite;
+}
+
 /* ---------- Píldoras ---------- */
 .pill {
   display: inline-flex;

@@ -64,9 +64,12 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="flex-1 grad-night relative overflow-hidden flex items-center justify-center px-4 py-12">
-      <div className="pointer-events-none absolute -top-24 -right-24 h-72 w-72 rounded-full bg-fuchsia-500/20 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-24 -left-24 h-72 w-72 rounded-full bg-indigo-400/20 blur-3xl" />
+    <main className="flex-1 relative overflow-hidden flex items-center justify-center px-4 py-12 bg-[#5B21B6]">
+      {/* Bloques de color estilo Mundial 26 */}
+      <div className="pointer-events-none absolute -top-28 -right-28 h-96 w-96 rounded-[5rem] bg-[#E4002B] rotate-12" />
+      <div className="pointer-events-none absolute -bottom-32 -left-24 h-80 w-80 rounded-[40%] bg-[#00A859] -rotate-6" />
+      <div className="pointer-events-none absolute top-1/4 -left-16 h-40 w-40 rounded-full bg-[#F59E0B]/90" />
+      <div className="pointer-events-none absolute -bottom-16 right-10 h-44 w-44 rounded-full bg-[#7C3AED]" />
 
       <div className="w-full max-w-sm relative">
         <div className="text-center mb-8 text-white">
