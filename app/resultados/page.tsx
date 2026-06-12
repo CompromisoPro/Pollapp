@@ -29,14 +29,11 @@ export default async function TablaPage() {
   const rows = (data ?? []) as Breakdown[];
 
   // Posición con empates: mismo puntaje => misma posición (estilo "1, 2, 2, 4").
-  let lastPoints: number | null = null;
-  let lastRank = 0;
-  const ranked = rows.map((r, i) => {
-    const rank = r.points_total === lastPoints ? lastRank : i + 1;
-    lastPoints = r.points_total;
-    lastRank = rank;
-    return { ...r, rank };
-  });
+  // 1 + cantidad de jugadores con MÁS puntos (ranking de competición estándar).
+  const ranked = rows.map((r) => ({
+    ...r,
+    rank: rows.filter((x) => x.points_total > r.points_total).length + 1,
+  }));
 
   return (
     <>
