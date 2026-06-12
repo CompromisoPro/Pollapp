@@ -1,5 +1,5 @@
-import PageHeader from "@/components/PageHeader";
 import SubTabs from "@/components/SubTabs";
+import SectionBanner, { SectionWatermark } from "@/components/SectionBanner";
 
 const TABS = [
   { href: "/resultados", label: "Tabla", emoji: "🏆" },
@@ -12,14 +12,15 @@ export default function ResultadosLayout({
   children: React.ReactNode;
 }) {
   return (
-    <main className="flex-1 mx-auto w-full max-w-3xl px-3 py-6">
-      <PageHeader
-        title="Resultados de la polla"
+    <main className="relative flex-1 mx-auto w-full max-w-3xl px-3 py-6 overflow-x-clip">
+      <SectionWatermark />
+      <SectionBanner
         emoji="🏅"
+        title="Resultados de la polla"
         subtitle="Cómo va el ranking general y cómo te fue a ti."
       />
       <SubTabs tabs={TABS} />
-      {children}
+      <div className="relative">{children}</div>
     </main>
   );
 }
