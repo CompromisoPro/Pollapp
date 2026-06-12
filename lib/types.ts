@@ -15,6 +15,7 @@ export interface Profile {
   id: string;
   email: string | null;
   full_name: string | null;
+  rut: string | null;
   paid: boolean;
   is_admin: boolean;
   points_total: number;

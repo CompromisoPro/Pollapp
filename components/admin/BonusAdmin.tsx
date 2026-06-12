@@ -2,7 +2,32 @@
 
 import { useState, useTransition } from "react";
 import type { BonusQuestion, Team } from "@/lib/types";
-import { saveBonusOfficial, setBonusStatus } from "@/app/admin/actions";
+import {
+  saveBonusOfficial,
+  setBonusStatus,
+  createBonus,
+  updateBonus,
+  deleteBonus,
+} from "@/app/admin/actions";
+import { formatCl } from "@/lib/time";
+
+const KINDS = [
+  ["number", "Número exacto"],
+  ["player", "Jugador (texto, se califica a mano)"],
+  ["team", "Una selección"],
+  ["finalists", "Dos finalistas"],
+  ["qualifiers", "Clasificados de un grupo"],
+] as const;
+
+const PHASES_BONUS = [
+  ["especial", "Especial del torneo"],
+  ["grupos", "Fase de grupos"],
+  ["dieciseisavos", "Dieciseisavos"],
+  ["octavos", "Octavos"],
+  ["cuartos", "Cuartos"],
+  ["semis", "Semifinales"],
+  ["final", "Final"],
+] as const;
 
 export default function BonusAdmin({
   questions,
@@ -11,8 +36,112 @@ export default function BonusAdmin({
   questions: BonusQuestion[];
   teams: Team[];
 }) {
+  const [msg, setMsg] = useState("");
+  const [pending, start] = useTransition();
+
+  function onCreate(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    const form = e.currentTarget;
+    setMsg("");
+    start(async () => {
+      const res = await createBonus(fd);
+      if ("error" in res) setMsg(res.error);
+      else {
+        setMsg("✓ Bono creado (nace oculto: ábrelo cuando quieras que lo vean).");
+        form.reset();
+      }
+    });
+  }
+
   return (
     <div className="space-y-2">
+      {/* Crear bono */}
+      <details className="card overflow-hidden">
+        <summary className="cursor-pointer select-none px-4 py-3 text-sm font-bold text-gray-500">
+          + Crear bono nuevo
+        </summary>
+        <form
+          onSubmit={onCreate}
+          className="border-t border-gray-100 p-4 grid grid-cols-2 gap-3"
+        >
+          <input
+            name="title"
+            placeholder="Título (ej. Goleador de octavos)"
+            className="field px-2 py-1.5 text-sm col-span-2"
+          />
+          <textarea
+            name="description"
+            placeholder="Descripción / reglas del bono (opcional)"
+            rows={2}
+            className="field px-2 py-1.5 text-sm col-span-2"
+          />
+          <label className="text-xs text-gray-500 flex flex-col">
+            Tipo de respuesta
+            <select name="kind" className="field px-2 py-1.5 text-sm">
+              {KINDS.map(([v, l]) => (
+                <option key={v} value={v}>
+                  {l}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="text-xs text-gray-500 flex flex-col">
+            Fase
+            <select name="phase" className="field px-2 py-1.5 text-sm">
+              {PHASES_BONUS.map(([v, l]) => (
+                <option key={v} value={v}>
+                  {l}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="text-xs text-gray-500 flex flex-col">
+            Puntos
+            <input
+              name="max_points"
+              type="number"
+              min={1}
+              placeholder="3"
+              className="field px-2 py-1.5 text-sm"
+            />
+          </label>
+          <label className="text-xs text-gray-500 flex flex-col">
+            Cierre (hora Chile)
+            <input
+              name="deadline"
+              type="datetime-local"
+              className="field px-2 py-1.5 text-sm"
+            />
+          </label>
+          <label className="text-xs text-gray-500 flex flex-col">
+            Grupo (solo clasificados)
+            <input
+              name="group_label"
+              placeholder="A-L"
+              maxLength={1}
+              className="field px-2 py-1.5 text-sm uppercase w-20"
+            />
+          </label>
+          <button
+            disabled={pending}
+            className="btn btn-primary py-1.5 text-sm self-end"
+          >
+            + Crear bono
+          </button>
+        </form>
+      </details>
+
+      {msg && (
+        <p
+          className={`text-xs ${
+            msg.startsWith("✓") ? "text-green-600" : "text-red-600"
+          }`}
+        >
+          {msg}
+        </p>
+      )}
+
       {questions.length === 0 && (
         <p className="text-sm text-gray-400">
           No hay bonos cargados. Corre el archivo seed.sql en Supabase.
@@ -35,6 +164,40 @@ function BonusRow({ q, teams }: { q: BonusQuestion; teams: Team[] }) {
   );
   const [msg, setMsg] = useState("");
   const [pending, start] = useTransition();
+
+  // Editor del bono
+  const [editTitle, setEditTitle] = useState(q.title);
+  const [editDesc, setEditDesc] = useState(q.description ?? "");
+  const [editPoints, setEditPoints] = useState(String(q.max_points));
+  const [editDeadline, setEditDeadline] = useState(""); // vacío = no cambiar
+
+  function onEdit() {
+    if (!confirm(`¿Guardar los cambios del bono "${editTitle}"?`)) return;
+    setMsg("");
+    start(async () => {
+      const res = await updateBonus(q.id, {
+        title: editTitle,
+        description: editDesc,
+        max_points: parseInt(editPoints, 10),
+        deadlineLocal: editDeadline || undefined,
+      });
+      setMsg("error" in res ? res.error : "✓ Bono actualizado");
+    });
+  }
+
+  function onDelete() {
+    if (
+      !confirm(
+        `¿BORRAR el bono "${q.title}"?\n\nSe eliminan también TODAS las respuestas de los jugadores y se recalculan los puntos. Esto no se puede deshacer.`
+      )
+    )
+      return;
+    setMsg("");
+    start(async () => {
+      const res = await deleteBonus(q.id);
+      if ("error" in res) setMsg(res.error);
+    });
+  }
 
   const groupTeams =
     q.kind === "qualifiers"
@@ -156,6 +319,63 @@ function BonusRow({ q, teams }: { q: BonusQuestion; teams: Team[] }) {
           {msg}
         </p>
       )}
+
+      {/* Editar / borrar este bono */}
+      <details className="mt-2 border-t border-gray-100 pt-2">
+        <summary className="cursor-pointer select-none text-xs text-gray-400 hover:text-gray-600">
+          ✏️ Editar bono (título, puntos, cierre) o borrarlo
+        </summary>
+        <div className="mt-2 flex flex-wrap items-end gap-2">
+          <label className="text-xs text-gray-500 flex flex-col">
+            Título
+            <input
+              value={editTitle}
+              onChange={(e) => setEditTitle(e.target.value)}
+              className="field px-2 py-1.5 text-sm w-64"
+            />
+          </label>
+          <label className="text-xs text-gray-500 flex flex-col">
+            Puntos
+            <input
+              type="number"
+              min={1}
+              value={editPoints}
+              onChange={(e) => setEditPoints(e.target.value)}
+              className="field px-2 py-1.5 text-sm w-20"
+            />
+          </label>
+          <label className="text-xs text-gray-500 flex flex-col">
+            Nuevo cierre (Chile) — actual: {formatCl(q.deadline)}
+            <input
+              type="datetime-local"
+              value={editDeadline}
+              onChange={(e) => setEditDeadline(e.target.value)}
+              className="field px-2 py-1.5 text-sm"
+            />
+          </label>
+          <button
+            disabled={pending}
+            onClick={onEdit}
+            className="btn btn-success px-3 py-1.5 text-xs"
+          >
+            💾 Guardar cambios
+          </button>
+          <button
+            disabled={pending}
+            onClick={onDelete}
+            className="ml-auto text-xs text-red-500 hover:underline"
+          >
+            🗑️ Borrar bono
+          </button>
+        </div>
+        <textarea
+          value={editDesc}
+          onChange={(e) => setEditDesc(e.target.value)}
+          placeholder="Descripción"
+          rows={2}
+          className="field px-2 py-1.5 text-sm w-full mt-2"
+        />
+      </details>
     </div>
   );
 }

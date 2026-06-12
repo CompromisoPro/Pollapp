@@ -6,6 +6,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { scoreMatch, scoreBonus, type BonusKind } from "@/lib/scoring";
 import { computeLockAt, santiagoWallToUtc } from "@/lib/time";
 import { computeStandings, type MatchResult } from "@/lib/standings";
+import { canonicalRut } from "@/lib/rut";
 
 type Result = { ok: true } | { error: string };
 
@@ -437,6 +438,212 @@ export async function setAdmin(
       .eq("id", userId);
     if (error) return { error: error.message };
     revalidatePath("/admin");
+    return { ok: true };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+/**
+ * Crea un participante nuevo: usuario de auth (correo confirmado, sin enviar
+ * email) con contraseña = su RUT, y completa su perfil (nombre + RUT).
+ */
+export async function createPlayer(formData: FormData): Promise<Result> {
+  try {
+    await requireAdmin();
+    const name = String(formData.get("full_name") || "").trim();
+    const email = String(formData.get("email") || "").trim().toLowerCase();
+    const rut = String(formData.get("rut") || "").trim();
+    if (!name || !email || !rut)
+      return { error: "Completa nombre, correo y RUT." };
+    const pass = canonicalRut(rut);
+    if (pass.length < 7)
+      return { error: "RUT inválido (debe ser el RUT completo, con dígito verificador)." };
+
+    const admin = createAdminClient();
+    const { data, error } = await admin.auth.admin.createUser({
+      email,
+      password: pass,
+      email_confirm: true,
+      user_metadata: { full_name: name },
+    });
+    if (error) return { error: error.message };
+
+    // El trigger crea el perfil; completamos nombre y RUT.
+    await admin
+      .from("profiles")
+      .update({ full_name: name, rut })
+      .eq("id", data.user.id);
+
+    revalidatePath("/admin");
+    revalidatePath("/resultados");
+    return { ok: true };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+/**
+ * Edita un participante (nombre, correo y/o RUT). Si cambia el RUT, su
+ * contraseña pasa a ser el RUT nuevo (regla de la polla).
+ */
+export async function updatePlayer(
+  userId: string,
+  fields: { full_name: string; email: string; rut: string }
+): Promise<Result> {
+  try {
+    await requireAdmin();
+    const name = fields.full_name.trim();
+    const email = fields.email.trim().toLowerCase();
+    const rut = fields.rut.trim();
+    if (!name || !email) return { error: "Nombre y correo son obligatorios." };
+
+    const admin = createAdminClient();
+
+    // Auth: correo y (si el RUT es válido) contraseña = RUT.
+    const authUpdate: { email: string; password?: string } = { email };
+    const pass = canonicalRut(rut);
+    if (rut && pass.length >= 7) authUpdate.password = pass;
+    const { error: authErr } = await admin.auth.admin.updateUserById(
+      userId,
+      authUpdate
+    );
+    if (authErr) return { error: authErr.message };
+
+    const { error } = await admin
+      .from("profiles")
+      .update({ full_name: name, email, rut: rut || null })
+      .eq("id", userId);
+    if (error) return { error: error.message };
+
+    revalidatePath("/admin");
+    revalidatePath("/resultados");
+    return { ok: true };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+// ----------------------------- MANTENEDOR DE BONOS -----------------------------
+
+function slugify(t: string): string {
+  return t
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "")
+    .slice(0, 40);
+}
+
+/** Crea un bono nuevo. Nace OCULTO; el admin lo abre cuando corresponda. */
+export async function createBonus(formData: FormData): Promise<Result> {
+  try {
+    await requireAdmin();
+    const title = String(formData.get("title") || "").trim();
+    const kind = String(formData.get("kind") || "number");
+    const phase = String(formData.get("phase") || "especial");
+    const description = String(formData.get("description") || "").trim();
+    const groupLabel =
+      String(formData.get("group_label") || "").trim().toUpperCase() || null;
+    const maxPoints = parseInt(String(formData.get("max_points") || ""), 10);
+    const deadlineLocal = String(formData.get("deadline") || ""); // datetime-local (hora Chile)
+
+    if (!title || !deadlineLocal || Number.isNaN(maxPoints))
+      return { error: "Completa título, puntos y fecha de cierre." };
+    if (kind === "qualifiers" && !groupLabel)
+      return { error: "Los bonos de clasificados necesitan el grupo (A-L)." };
+
+    const [datePart, timePart] = deadlineLocal.split("T");
+    const [y, mo, d] = datePart.split("-").map(Number);
+    const [h, mi] = timePart.split(":").map(Number);
+    const deadline = santiagoWallToUtc(y, mo, d, h, mi);
+
+    const admin = createAdminClient();
+    const { error } = await admin.from("bonus_questions").insert({
+      id: slugify(title) || `bono_${Date.now()}`,
+      title,
+      kind,
+      phase,
+      description: description || null,
+      group_label: groupLabel,
+      max_points: maxPoints,
+      deadline: deadline.toISOString(),
+      status: "oculto",
+      sort: 100,
+    });
+    if (error)
+      return {
+        error: error.code === "23505"
+          ? "Ya existe un bono con un título muy parecido. Cambia el título."
+          : error.message,
+      };
+
+    revalidatePath("/admin");
+    revalidatePath("/apuestas/bonos");
+    return { ok: true };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+/** Edita título, descripción, puntos y/o cierre de un bono. */
+export async function updateBonus(
+  questionId: string,
+  fields: {
+    title: string;
+    description: string;
+    max_points: number;
+    deadlineLocal?: string; // datetime-local hora Chile; vacío = no cambiar
+  }
+): Promise<Result> {
+  try {
+    await requireAdmin();
+    if (!fields.title.trim() || Number.isNaN(fields.max_points))
+      return { error: "Título y puntos son obligatorios." };
+
+    const patch: Record<string, unknown> = {
+      title: fields.title.trim(),
+      description: fields.description.trim() || null,
+      max_points: fields.max_points,
+    };
+    if (fields.deadlineLocal) {
+      const [datePart, timePart] = fields.deadlineLocal.split("T");
+      const [y, mo, d] = datePart.split("-").map(Number);
+      const [h, mi] = timePart.split(":").map(Number);
+      patch.deadline = santiagoWallToUtc(y, mo, d, h, mi).toISOString();
+    }
+
+    const admin = createAdminClient();
+    const { error } = await admin
+      .from("bonus_questions")
+      .update(patch)
+      .eq("id", questionId);
+    if (error) return { error: error.message };
+
+    revalidatePath("/admin");
+    revalidatePath("/apuestas/bonos");
+    return { ok: true };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+/** Borra un bono y sus respuestas; recalcula los totales. */
+export async function deleteBonus(questionId: string): Promise<Result> {
+  try {
+    await requireAdmin();
+    const admin = createAdminClient();
+    const { error } = await admin
+      .from("bonus_questions")
+      .delete()
+      .eq("id", questionId);
+    if (error) return { error: error.message };
+
+    await recomputeAllTotals(admin);
+    revalidatePath("/admin");
+    revalidatePath("/apuestas/bonos");
+    revalidatePath("/resultados");
     return { ok: true };
   } catch (e) {
     return fail(e);
