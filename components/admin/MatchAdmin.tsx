@@ -85,10 +85,11 @@ export default function MatchAdmin({ matches }: { matches: Match[] }) {
           <button
             key={v}
             onClick={() => setView(v)}
+            aria-pressed={view === v}
             className={`flex-1 rounded-lg px-3 py-1.5 text-sm font-bold transition-colors ${
               view === v
                 ? "grad-brand text-white"
-                : "text-gray-500 hover:bg-gray-50"
+                : "text-gray-600 hover:bg-gray-50"
             }`}
           >
             {label}
@@ -99,7 +100,7 @@ export default function MatchAdmin({ matches }: { matches: Match[] }) {
       {/* VISTA PRÓXIMOS */}
       {view === "proximos" &&
         (proximosDays.length === 0 ? (
-          <p className="card p-6 text-center text-sm text-gray-400">
+          <p className="card p-6 text-center text-sm text-gray-500">
             🎉 Todos los partidos tienen resultado cargado.
           </p>
         ) : (
@@ -126,7 +127,7 @@ export default function MatchAdmin({ matches }: { matches: Match[] }) {
             <details key={title} className="card overflow-hidden">
               <summary className="cursor-pointer select-none px-4 py-3 flex items-center justify-between gap-2 text-sm">
                 <span className="font-bold">{title}</span>
-                <span className="text-xs text-gray-400">
+                <span className="text-xs text-gray-500">
                   {items.length} partidos
                   {abiertos > 0 && (
                     <span className="ml-2 text-green-600 font-semibold">
@@ -150,7 +151,7 @@ export default function MatchAdmin({ matches }: { matches: Match[] }) {
         })}
 
       {matches.length === 0 && (
-        <p className="text-sm text-gray-400">Aún no hay partidos.</p>
+        <p className="text-sm text-gray-500">Aún no hay partidos.</p>
       )}
 
       {/* Crear partido (plegado, se usa poco) */}
@@ -164,7 +165,8 @@ export default function MatchAdmin({ matches }: { matches: Match[] }) {
       >
         <select
           name="phase"
-          className="col-span-2 sm:col-span-1 rounded-lg border border-gray-300 px-2 py-1.5 text-sm"
+          aria-label="Fase del partido"
+          className="field col-span-2 sm:col-span-1 px-2 py-1.5 text-base"
         >
           {PHASES.map(([v, l]) => (
             <option key={v} value={v}>
@@ -175,30 +177,34 @@ export default function MatchAdmin({ matches }: { matches: Match[] }) {
         <input
           name="group_label"
           placeholder="Grupo (A-L, opcional)"
+          aria-label="Grupo"
           maxLength={1}
-          className="rounded-lg border border-gray-300 px-2 py-1.5 text-sm uppercase"
+          className="field px-2 py-1.5 text-base uppercase"
         />
         <input
           name="home_team"
           placeholder="Local (ej. Chile)"
-          className="rounded-lg border border-gray-300 px-2 py-1.5 text-sm"
+          aria-label="Equipo local"
+          className="field px-2 py-1.5 text-base"
         />
         <input
           name="away_team"
           placeholder="Visita (ej. Argentina)"
-          className="rounded-lg border border-gray-300 px-2 py-1.5 text-sm"
+          aria-label="Equipo visita"
+          className="field px-2 py-1.5 text-base"
         />
         <label className="col-span-2 sm:col-span-1 text-xs text-gray-500 flex flex-col">
           Día y hora (Chile)
           <input
             type="datetime-local"
             name="kickoff"
-            className="rounded-lg border border-gray-300 px-2 py-1.5 text-sm"
+            aria-label="Día y hora del partido"
+            className="field px-2 py-1.5 text-base"
           />
         </label>
         <button
           disabled={pending}
-          className="col-span-2 sm:col-span-1 rounded-lg bg-blue-600 text-white py-1.5 text-sm font-semibold hover:bg-blue-700 disabled:opacity-60 self-end"
+          className="btn btn-primary col-span-2 sm:col-span-1 py-1.5 text-sm self-end"
         >
           + Crear partido
         </button>
@@ -226,20 +232,24 @@ function MatchRow({ match }: { match: Match }) {
     match.away_score != null ? String(match.away_score) : ""
   );
   const [msg, setMsg] = useState("");
+  const [confirmDel, setConfirmDel] = useState(false);
   const [pending, start] = useTransition();
 
   const statusColor =
     match.status === "abierto"
-      ? "bg-green-100 text-green-700"
+      ? "bg-green-100 text-green-800"
       : match.status === "finalizado"
-      ? "bg-gray-200 text-gray-600"
-      : "bg-amber-100 text-amber-700";
+      ? "bg-gray-200 text-gray-700"
+      : "bg-amber-100 text-amber-800";
 
-  function act(fn: () => Promise<{ ok: true } | { error: string }>) {
+  function act(
+    fn: () => Promise<{ ok: true } | { error: string }>,
+    okMsg = ""
+  ) {
     setMsg("");
     start(async () => {
       const res = await fn();
-      if ("error" in res) setMsg(res.error);
+      setMsg("error" in res ? res.error : okMsg);
     });
   }
 
@@ -247,7 +257,7 @@ function MatchRow({ match }: { match: Match }) {
     <div className="rounded-xl border border-gray-200 bg-white p-3 text-sm">
       <div className="flex items-center justify-between gap-2">
         <div className="font-medium">
-          {match.home_team} <span className="text-gray-400">vs</span>{" "}
+          {match.home_team} <span className="text-gray-500">vs</span>{" "}
           {match.away_team}
         </div>
         <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${statusColor}`}>
@@ -271,7 +281,7 @@ function MatchRow({ match }: { match: Match }) {
                 )
               )
             }
-            className="rounded-lg border border-gray-300 px-2 py-1 text-xs font-medium hover:bg-gray-50"
+            className="btn btn-ghost px-2.5 py-1 text-xs"
           >
             {match.status === "abierto" ? "👁️ Ocultar" : "🚀 Abrir"}
           </button>
@@ -281,18 +291,24 @@ function MatchRow({ match }: { match: Match }) {
         <div className="flex items-center gap-1">
           <input
             type="number"
+            inputMode="numeric"
             min={0}
             value={home}
             onChange={(e) => setHome(e.target.value)}
-            className="w-12 rounded border border-gray-300 text-center py-1"
+            aria-label={`Goles de ${match.home_team}`}
+            className="field w-12 text-center py-1 text-base"
           />
-          <span className="text-gray-400">-</span>
+          <span aria-hidden className="text-gray-400">
+            -
+          </span>
           <input
             type="number"
+            inputMode="numeric"
             min={0}
             value={away}
             onChange={(e) => setAway(e.target.value)}
-            className="w-12 rounded border border-gray-300 text-center py-1"
+            aria-label={`Goles de ${match.away_team}`}
+            className="field w-12 text-center py-1 text-base"
           />
           <button
             disabled={pending}
@@ -303,27 +319,51 @@ function MatchRow({ match }: { match: Match }) {
                 setMsg("Ingresa el resultado.");
                 return;
               }
-              act(() => saveMatchResult(match.id, h, a));
+              act(() => saveMatchResult(match.id, h, a), "✓ Resultado guardado");
             }}
-            className="rounded-lg bg-green-600 px-2 py-1 text-xs font-semibold text-white hover:bg-green-700"
+            className="btn btn-success px-2.5 py-1 text-xs"
           >
             💾 Resultado
           </button>
         </div>
 
-        <button
-          disabled={pending}
-          onClick={() => {
-            if (confirm("¿Borrar este partido? Se eliminan sus pronósticos."))
-              act(() => deleteMatch(match.id));
-          }}
-          className="ml-auto text-xs text-red-500 hover:underline"
-        >
-          Borrar
-        </button>
+        {confirmDel ? (
+          <span className="ml-auto inline-flex items-center gap-1 text-xs">
+            <span className="text-gray-600">¿Borrar?</span>
+            <button
+              disabled={pending}
+              onClick={() => act(() => deleteMatch(match.id))}
+              className="font-bold text-red-600 hover:underline"
+            >
+              Sí
+            </button>
+            <button
+              onClick={() => setConfirmDel(false)}
+              className="text-gray-500 hover:underline"
+            >
+              No
+            </button>
+          </span>
+        ) : (
+          <button
+            disabled={pending}
+            onClick={() => setConfirmDel(true)}
+            className="ml-auto text-xs text-red-600 hover:underline"
+          >
+            Borrar
+          </button>
+        )}
       </div>
 
-      {msg && <p className="mt-1 text-xs text-red-600">{msg}</p>}
+      {msg && (
+        <p
+          className={`mt-1 text-xs ${
+            msg.startsWith("✓") ? "text-green-600" : "text-red-600"
+          }`}
+        >
+          {msg}
+        </p>
+      )}
     </div>
   );
 }

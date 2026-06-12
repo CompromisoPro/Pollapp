@@ -40,7 +40,7 @@ export default function BonusGrading({
           <details key={q.id} className="card overflow-hidden">
             <summary className="cursor-pointer select-none px-4 py-3 font-bold text-sm flex items-center justify-between">
               <span>{q.title}</span>
-              <span className="text-xs font-medium text-gray-400">
+              <span className="text-xs font-medium text-gray-500">
                 {graded}/{list.length} calificados · {q.max_points} pts
               </span>
             </summary>
@@ -49,7 +49,7 @@ export default function BonusGrading({
                 <Row key={a.id} a={a} maxPoints={q.max_points} />
               ))}
               {list.length === 0 && (
-                <p className="px-4 py-3 text-sm text-gray-400">Sin respuestas.</p>
+                <p className="px-4 py-3 text-sm text-gray-500">Sin respuestas.</p>
               )}
             </div>
           </details>

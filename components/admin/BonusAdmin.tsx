@@ -143,7 +143,7 @@ export default function BonusAdmin({
       )}
 
       {questions.length === 0 && (
-        <p className="text-sm text-gray-400">
+        <p className="text-sm text-gray-500">
           No hay bonos cargados. Corre el archivo seed.sql en Supabase.
         </p>
       )}
@@ -257,7 +257,7 @@ function BonusRow({ q, teams }: { q: BonusQuestion; teams: Team[] }) {
           >
             {visible ? "👁️ Ocultar" : "🚀 Abrir"}
           </button>
-          <span className="text-xs text-gray-400">{q.max_points} pts</span>
+          <span className="text-xs text-gray-500">{q.max_points} pts</span>
         </span>
       </div>
 
@@ -304,7 +304,7 @@ function BonusRow({ q, teams }: { q: BonusQuestion; teams: Team[] }) {
         <button
           disabled={pending}
           onClick={onSave}
-          className="rounded-lg bg-green-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-green-700 disabled:opacity-60"
+          className="btn btn-success px-3 py-1.5 text-xs"
         >
           {pending ? "Calculando…" : "Guardar oficial"}
         </button>
@@ -322,7 +322,7 @@ function BonusRow({ q, teams }: { q: BonusQuestion; teams: Team[] }) {
 
       {/* Editar / borrar este bono */}
       <details className="mt-2 border-t border-gray-100 pt-2">
-        <summary className="cursor-pointer select-none text-xs text-gray-400 hover:text-gray-600">
+        <summary className="cursor-pointer select-none text-xs text-gray-500 hover:text-gray-600">
           ✏️ Editar bono (título, puntos, cierre) o borrarlo
         </summary>
         <div className="mt-2 flex flex-wrap items-end gap-2">
@@ -391,7 +391,7 @@ function Select({
 }) {
   if (teams.length === 0)
     return (
-      <span className="text-xs text-gray-400 italic">
+      <span className="text-xs text-gray-500 italic">
         (agrega selecciones primero)
       </span>
     );
