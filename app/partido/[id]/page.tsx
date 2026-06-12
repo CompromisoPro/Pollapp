@@ -57,11 +57,28 @@ export default async function PartidoPage({
     .eq("match_id", matchId);
   const preds = (predData ?? []) as unknown as PredRow[];
 
-  // Orden: por puntos desc (si hay resultado), si no por nombre.
-  preds.sort((a, b) => {
-    if (finished) return (b.points ?? 0) - (a.points ?? 0);
-    return (a.profiles?.full_name ?? "").localeCompare(b.profiles?.full_name ?? "");
-  });
+  const name = (p: PredRow) => p.profiles?.full_name ?? "";
+
+  if (finished) {
+    // Con resultado oficial: por puntos desc, luego nombre.
+    preds.sort((a, b) => (b.points ?? 0) - (a.points ?? 0) || name(a).localeCompare(name(b)));
+  } else {
+    // Sin resultado aún: agrupar por marcador más apostado (espeja el gráfico
+    // de arriba). Empate de popularidad -> marcador "menor"; dentro del grupo,
+    // alfabético.
+    const popularity = new Map<string, number>();
+    for (const p of preds) {
+      const k = `${p.home_score}-${p.away_score}`;
+      popularity.set(k, (popularity.get(k) ?? 0) + 1);
+    }
+    const key = (p: PredRow) => `${p.home_score}-${p.away_score}`;
+    preds.sort((a, b) => {
+      const diff = (popularity.get(key(b)) ?? 0) - (popularity.get(key(a)) ?? 0);
+      if (diff !== 0) return diff;
+      if (key(a) !== key(b)) return key(a).localeCompare(key(b));
+      return name(a).localeCompare(name(b));
+    });
+  }
 
   return (
     <main className="flex-1 mx-auto w-full max-w-2xl px-3 py-6">
@@ -113,7 +130,7 @@ export default async function PartidoPage({
         <>
           <div className="card p-4 mb-3">
             <p className="text-xs font-bold text-gray-500 mb-2">
-              📊 Marcadores más apostados ({preds.length})
+              📊 Marcadores apostados ({preds.length})
             </p>
             <BetChart
               bets={preds.map((p) => ({
@@ -138,14 +155,23 @@ export default async function PartidoPage({
               </tr>
             </thead>
             <tbody>
-              {preds.map((p) => {
+              {preds.map((p, i) => {
                 const isMe = p.user_id === user?.id;
+                // Primer jugador de un grupo de marcador (solo cuando agrupamos
+                // por marcador, es decir sin resultado oficial): borde más marcado.
+                const prev = preds[i - 1];
+                const newGroup =
+                  !finished &&
+                  i > 0 &&
+                  prev &&
+                  (prev.home_score !== p.home_score ||
+                    prev.away_score !== p.away_score);
                 return (
                   <tr
                     key={p.user_id}
-                    className={`border-t border-gray-100 ${
-                      isMe ? "bg-brand-50" : ""
-                    }`}
+                    className={`border-t ${
+                      newGroup ? "border-gray-200" : "border-gray-100"
+                    } ${isMe ? "bg-brand-50" : ""}`}
                   >
                     <td className="px-3 py-2 font-medium">
                       {p.profiles?.full_name ?? "—"}

@@ -4,9 +4,10 @@
  */
 export default function BetChart({
   bets,
-  max = 6,
+  max,
 }: {
   bets: { home: number; away: number }[];
+  /** Tope opcional de marcadores a mostrar. Sin valor, se muestran todos. */
   max?: number;
 }) {
   if (bets.length === 0) {
@@ -19,8 +20,9 @@ export default function BetChart({
     counts.set(k, (counts.get(k) ?? 0) + 1);
   }
   const sorted = [...counts.entries()].sort((a, b) => b[1] - a[1]);
-  const top = sorted.slice(0, max);
-  const otros = sorted.slice(max).reduce((s, [, n]) => s + n, 0);
+  // Sin `max`, mostramos todos los marcadores que apostó la gente.
+  const top = max ? sorted.slice(0, max) : sorted;
+  const otros = max ? sorted.slice(max).reduce((s, [, n]) => s + n, 0) : 0;
   const maxN = top[0][1];
 
   const resumen = top
@@ -31,7 +33,7 @@ export default function BetChart({
     <div
       className="space-y-1.5"
       role="img"
-      aria-label={`Marcadores más apostados. ${resumen}.`}
+      aria-label={`Marcadores apostados. ${resumen}.`}
     >
       {top.map(([score, n]) => (
         <div key={score} className="flex items-center gap-2 text-xs">
