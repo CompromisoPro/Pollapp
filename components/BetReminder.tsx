@@ -4,10 +4,11 @@ import { useEffect, useState } from "react";
 import type { MatchWithPrediction } from "@/lib/types";
 
 /**
- * Alerta arriba de la lista de apuestas: si al usuario le faltan partidos por
- * apostar en el día abierto, le recuerda con un countdown al cierre más próximo
- * de los que aún le faltan. Tick de 1s (countdown HH:MM:SS), solo en cliente.
- * Se auto-oculta cuando completa todo o cuando ya no queda plazo.
+ * Aviso arriba de la lista de apuestas, con countdown al cierre más próximo.
+ * Dos niveles según el estado del usuario en el día abierto:
+ *   - Faltan apuestas  -> aviso crítico (amber): "te faltan N partidos".
+ *   - Ya apostó todo    -> aviso suave (gris): aún puede cambiar marcadores.
+ * Tick de 1s (HH:MM:SS), solo en cliente. Desaparece cuando ya no queda plazo.
  */
 export default function BetReminder({
   matches,
@@ -30,36 +31,47 @@ export default function BetReminder({
   // Antes del primer tick no sabemos la hora: no mostramos nada (evita flash).
   if (nowMs === 0) return null;
 
-  // Partidos que le faltan y cuyo plazo sigue vigente.
-  const pending = matches.filter(
-    (m) => !m.prediction && new Date(m.lock_at).getTime() > nowMs
-  );
-  if (pending.length === 0) return null;
+  // Partidos del día cuyo plazo sigue vigente (se pueden ingresar o editar).
+  const open = matches.filter((m) => new Date(m.lock_at).getTime() > nowMs);
+  if (open.length === 0) return null;
 
-  // Cierre más próximo entre los pendientes (el plazo real más urgente).
-  const nextLock = Math.min(
-    ...pending.map((m) => new Date(m.lock_at).getTime())
-  );
+  // Cierre más próximo entre los abiertos (el plazo real más urgente).
+  const nextLock = Math.min(...open.map((m) => new Date(m.lock_at).getTime()));
   const remaining = nextLock - nowMs;
   if (remaining <= 0) return null;
 
-  const n = pending.length;
+  // ¿Cuántos de los abiertos aún no tienen apuesta?
+  const missing = open.filter((m) => !m.prediction).length;
+  const countdown = formatCountdown(remaining);
+
+  // Crítica: le faltan apuestas. Suave: ya apostó todo pero aún puede cambiar.
+  if (missing > 0) {
+    return (
+      <div
+        role="alert"
+        className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3"
+      >
+        <p className="text-sm font-semibold text-amber-900">
+          Recuerda ingresar tus apuestas: te {missing === 1 ? "falta" : "faltan"}{" "}
+          <strong>
+            {missing} {missing === 1 ? "partido" : "partidos"}
+          </strong>
+          .
+        </p>
+        <p className="text-sm text-amber-800">
+          Cierra en <strong className="tabular-nums">{countdown}</strong>
+        </p>
+      </div>
+    );
+  }
 
   return (
-    <div
-      role="alert"
-      className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3"
-    >
-      <p className="text-sm font-semibold text-amber-900">
-        Recuerda ingresar tus apuestas: te {n === 1 ? "falta" : "faltan"}{" "}
-        <strong>
-          {n} {n === 1 ? "partido" : "partidos"}
-        </strong>
-        .
+    <div className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5">
+      <p className="text-sm text-gray-600">
+        Ya apostaste todo. Puedes cambiar tus marcadores hasta que cierre.
       </p>
-      <p className="text-sm text-amber-800">
-        Cierra en{" "}
-        <strong className="tabular-nums">{formatCountdown(remaining)}</strong>
+      <p className="text-sm text-gray-500">
+        Cierra en <strong className="tabular-nums">{countdown}</strong>
       </p>
     </div>
   );
