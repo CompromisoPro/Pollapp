@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import MatchCard from "@/components/MatchCard";
+import BetReminder from "@/components/BetReminder";
 import type { MatchWithPrediction } from "@/lib/types";
 
 export interface ApuestaDay {
@@ -52,6 +53,9 @@ export default function ApuestasCarousel({
 
   return (
     <div>
+      {/* Recordatorio: si el día activo es apostable y faltan partidos. */}
+      {active.mode === "bet" && <BetReminder matches={active.matches} />}
+
       {/* Carrusel de pills de fechas */}
       <div
         role="tablist"
