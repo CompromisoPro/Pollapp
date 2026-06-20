@@ -35,8 +35,12 @@ set search_path = public
 as $$
   update profiles pr
   set points_total =
-        coalesce((select sum(points) from predictions   where user_id = p_user), 0)
-      + coalesce((select sum(points) from bonus_answers where user_id = p_user), 0)
+        coalesce((select sum(p.points) from predictions p
+                  join matches m on m.id = p.match_id
+                  where p.user_id = p_user and m.status = 'finalizado'), 0)
+      + coalesce((select sum(ba.points) from bonus_answers ba
+                  join bonus_questions q on q.id = ba.question_id
+                  where ba.user_id = p_user and q.official_answer is not null), 0)
   where pr.id = p_user;
 $$;
 
@@ -79,8 +83,12 @@ create trigger bonus_answers_points_sync
 -- ---------------------------------------------------------------------
 update profiles pr
 set points_total =
-      coalesce((select sum(points) from predictions   where user_id = pr.id), 0)
-    + coalesce((select sum(points) from bonus_answers where user_id = pr.id), 0);
+      coalesce((select sum(p.points) from predictions p
+                join matches m on m.id = p.match_id
+                where p.user_id = pr.id and m.status = 'finalizado'), 0)
+    + coalesce((select sum(ba.points) from bonus_answers ba
+                join bonus_questions q on q.id = ba.question_id
+                where ba.user_id = pr.id and q.official_answer is not null), 0);
 
 -- Verificación (la tabla ya corregida, de mayor a menor):
 select full_name, points_total

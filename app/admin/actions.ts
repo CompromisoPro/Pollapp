@@ -14,28 +14,12 @@ function fail(e: unknown): Result {
   return { error: e instanceof Error ? e.message : "Error desconocido." };
 }
 
-/** Recalcula el puntaje total de TODOS los jugadores (marcadores + bonos). */
-async function recomputeAllTotals(admin: ReturnType<typeof createAdminClient>) {
-  const [{ data: preds }, { data: bonus }, { data: profiles }] =
-    await Promise.all([
-      admin.from("predictions").select("user_id, points"),
-      admin.from("bonus_answers").select("user_id, points"),
-      admin.from("profiles").select("id"),
-    ]);
-
-  const totals = new Map<string, number>();
-  for (const p of profiles ?? []) totals.set(p.id, 0);
-  for (const p of preds ?? [])
-    totals.set(p.user_id, (totals.get(p.user_id) ?? 0) + (p.points ?? 0));
-  for (const b of bonus ?? [])
-    totals.set(b.user_id, (totals.get(b.user_id) ?? 0) + (b.points ?? 0));
-
-  await Promise.all(
-    [...totals.entries()].map(([id, total]) =>
-      admin.from("profiles").update({ points_total: total }).eq("id", id)
-    )
-  );
-}
+// El total de cada jugador (profiles.points_total) lo mantiene la BASE con un
+// trigger (supabase/points_total_trigger.sql): cada cambio de puntos en
+// predictions/bonus_answers recalcula el total del jugador de forma atómica.
+// Antes esto lo hacía un recomputeAllTotals en la app que, al leer datos recién
+// escritos desde una réplica con retraso, podía pisar el valor correcto con uno
+// viejo (la tabla mostraba MENOS puntos que los reales). Por eso ya no existe.
 
 /**
  * Si todos los partidos de un grupo están finalizados, calcula la tabla y
@@ -172,7 +156,6 @@ export async function deleteMatch(matchId: number): Promise<Result> {
     const admin = createAdminClient();
     const { error } = await admin.from("matches").delete().eq("id", matchId);
     if (error) return { error: error.message };
-    await recomputeAllTotals(admin);
     revalidatePath("/admin");
     revalidatePath("/apuestas");
     return { ok: true };
@@ -238,8 +221,6 @@ export async function saveMatchResult(
     if (m?.phase === "grupos" && m.group_label) {
       await autoGradeGroupIfComplete(admin, m.group_label);
     }
-
-    await recomputeAllTotals(admin);
     revalidatePath("/admin");
     revalidatePath("/apuestas");
     revalidatePath("/resultados");
@@ -332,8 +313,6 @@ export async function saveBonusOfficial(
           .eq("id", a.id)
       )
     );
-
-    await recomputeAllTotals(admin);
     revalidatePath("/admin");
     revalidatePath("/apuestas/bonos");
     revalidatePath("/resultados");
@@ -397,8 +376,6 @@ export async function gradeBonusAnswer(
       .update({ points: pts })
       .eq("id", answerId);
     if (error) return { error: error.message };
-
-    await recomputeAllTotals(admin);
     revalidatePath("/admin");
     revalidatePath("/apuestas/bonos");
     revalidatePath("/resultados");
@@ -661,8 +638,6 @@ export async function deleteBonus(questionId: string): Promise<Result> {
       .delete()
       .eq("id", questionId);
     if (error) return { error: error.message };
-
-    await recomputeAllTotals(admin);
     revalidatePath("/admin");
     revalidatePath("/apuestas/bonos");
     revalidatePath("/resultados");
