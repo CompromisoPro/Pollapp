@@ -159,8 +159,12 @@ function BonusRow({ q, teams }: { q: BonusQuestion; teams: Team[] }) {
   const [single, setSingle] = useState<string>(
     off != null && !Array.isArray(off) ? String(off) : ""
   );
-  const [pair, setPair] = useState<[string, string]>(
-    Array.isArray(off) ? [String(off[0] ?? ""), String(off[1] ?? "")] : ["", ""]
+  // Hasta 3 equipos: clasificados puede llevar un 3° (mejor tercero) además del
+  // 1° y 2°. Finalistas usa solo los dos primeros.
+  const [trio, setTrio] = useState<[string, string, string]>(
+    Array.isArray(off)
+      ? [String(off[0] ?? ""), String(off[1] ?? ""), String(off[2] ?? "")]
+      : ["", "", ""]
   );
   const [msg, setMsg] = useState("");
   const [pending, start] = useTransition();
@@ -205,7 +209,9 @@ function BonusRow({ q, teams }: { q: BonusQuestion; teams: Team[] }) {
       : teams;
 
   function build(): unknown {
-    if (q.kind === "finalists" || q.kind === "qualifiers") return pair;
+    if (q.kind === "finalists") return [trio[0], trio[1]];
+    // Clasificados: 2 o 3 equipos (el 3° es opcional, solo si clasificó un mejor tercero).
+    if (q.kind === "qualifiers") return [trio[0], trio[1], trio[2]].filter(Boolean);
     if (q.kind === "number") return Number(single);
     if (q.kind === "player")
       // acepta varias respuestas separadas por coma
@@ -286,18 +292,41 @@ function BonusRow({ q, teams }: { q: BonusQuestion; teams: Team[] }) {
           <Select teams={groupTeams} value={single} onChange={setSingle} />
         )}
 
-        {(q.kind === "finalists" || q.kind === "qualifiers") && (
+        {q.kind === "finalists" && (
           <>
             <Select
               teams={groupTeams}
-              value={pair[0]}
-              onChange={(v) => setPair([v, pair[1]])}
+              value={trio[0]}
+              onChange={(v) => setTrio([v, trio[1], ""])}
             />
             <Select
               teams={groupTeams}
-              value={pair[1]}
-              onChange={(v) => setPair([pair[0], v])}
+              value={trio[1]}
+              onChange={(v) => setTrio([trio[0], v, ""])}
             />
+          </>
+        )}
+
+        {q.kind === "qualifiers" && (
+          <>
+            <Select
+              teams={groupTeams}
+              value={trio[0]}
+              onChange={(v) => setTrio([v, trio[1], trio[2]])}
+            />
+            <Select
+              teams={groupTeams}
+              value={trio[1]}
+              onChange={(v) => setTrio([trio[0], v, trio[2]])}
+            />
+            <Select
+              teams={groupTeams}
+              value={trio[2]}
+              onChange={(v) => setTrio([trio[0], trio[1], v])}
+            />
+            <span className="self-center text-xs text-gray-400">
+              3° opcional (si clasificó un mejor tercero)
+            </span>
           </>
         )}
 
