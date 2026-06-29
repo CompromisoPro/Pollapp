@@ -2,8 +2,8 @@ import SubTabs from "@/components/SubTabs";
 import SectionBanner from "@/components/SectionBanner";
 
 const TABS = [
-  { href: "/mundial/llaves", label: "Llaves", emoji: "🏆", badge: "new" },
-  { href: "/mundial", label: "Fixture", emoji: "📅" },
+  { href: "/mundial", label: "Llaves", emoji: "🏆", badge: "new", badgeUntil: "2026-07-06" },
+  { href: "/mundial/fixture", label: "Fixture", emoji: "📅" },
   { href: "/mundial/grupos", label: "Grupos", emoji: "📊" },
   { href: "/mundial/en-vivo", label: "Hoy", emoji: "🔴" },
 ];

@@ -2,14 +2,32 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 
 /** Pestañas secundarias (segmented control) dentro de una sección. */
 export default function SubTabs({
   tabs,
 }: {
-  tabs: { href: string; label: string; emoji?: string; badge?: string }[];
+  tabs: {
+    href: string;
+    label: string;
+    emoji?: string;
+    badge?: string;
+    /** Fecha ISO; el globito se oculta solo después de esa fecha. */
+    badgeUntil?: string;
+  }[];
 }) {
   const path = usePathname();
+
+  // El globito "new" se muestra solo tras montar (evita desajuste de
+  // hidratación) y mientras no haya pasado su fecha de expiración.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMounted(true);
+  }, []);
+  const showBadge = (t: { badge?: string; badgeUntil?: string }) =>
+    mounted && !!t.badge && (!t.badgeUntil || Date.now() < Date.parse(t.badgeUntil));
 
   return (
     // Contenedor con scroll: si hay muchas pestañas, se desliza en celular en
@@ -40,7 +58,7 @@ export default function SubTabs({
                 </span>
               )}
               {t.label}
-              {t.badge && (
+              {showBadge(t) && (
                 <span
                   aria-hidden
                   className="pointer-events-none absolute -top-2 left-1/2 z-10 -translate-x-1/2"
