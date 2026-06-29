@@ -13,7 +13,7 @@ export default async function LlavesPage() {
   // Todos los partidos de eliminación (incluye placeholders de rondas futuras).
   const { data: matchesData } = await supabase
     .from("matches")
-    .select("id, phase, home_team, away_team, home_score, away_score, status")
+    .select("id, code, phase, home_team, away_team, home_score, away_score, status")
     .neq("phase", "grupos")
     .order("code", { ascending: true });
   const matches = (matchesData ?? []) as BracketMatch[];
