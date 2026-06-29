@@ -4,6 +4,7 @@ import SectionBanner from "@/components/SectionBanner";
 const TABS = [
   { href: "/mundial", label: "Fixture", emoji: "📅" },
   { href: "/mundial/grupos", label: "Grupos", emoji: "📊" },
+  { href: "/mundial/llaves", label: "Llaves", emoji: "🏆" },
   { href: "/mundial/en-vivo", label: "Hoy", emoji: "🔴" },
 ];
 
