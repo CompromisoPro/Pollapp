@@ -222,8 +222,8 @@ export default function Fiesta({ winners }: { winners: Winner[] }) {
         {/* Gente buscando con linternas (guiño) */}
         <SearchParty />
 
-        {/* Jugadores pichangueando en la nieve */}
-        <PlayersOnSnow />
+        {/* Guerra de bolas de nieve entre cracks */}
+        <SnowballFight />
 
         {/* Helicóptero de rescate con foco */}
         <Heli />
@@ -258,7 +258,17 @@ export default function Fiesta({ winners }: { winners: Winner[] }) {
             <span className="gz-float inline-block" style={{ animationDelay: "0.8s" }}>🍾</span>
           </div>
 
-          <p className="gz-rise mt-8 text-[11px] uppercase tracking-widest text-white/40" style={{ animationDelay: "0.9s" }}>
+          {/* CTA principal */}
+          <div className="gz-rise mt-7 flex justify-center" style={{ animationDelay: "0.9s" }}>
+            <Link
+              href="/resultados"
+              className="rounded-full bg-white px-7 py-3 text-sm font-black text-[#3b1d6e] shadow-xl shadow-black/30 transition hover:scale-105"
+            >
+              📊 Ver resultados
+            </Link>
+          </div>
+
+          <p className="gz-rise mt-5 text-[11px] uppercase tracking-widest text-white/40" style={{ animationDelay: "1.05s" }}>
             ▼ sigue el hueveo ▼
           </p>
         </div>
@@ -417,27 +427,40 @@ function Heli() {
   );
 }
 
-function PlayersOnSnow() {
+function SnowballFight() {
+  // Camiseta de su selección + número + bandera + nombre = se nota quién es cada uno.
   const players = [
-    { name: "Mbappé", emoji: "🏃🏾", left: "16%", delay: "0s" },
-    { name: "Neymar", emoji: "🤸🏽", left: "40%", delay: "0.3s" },
-    { name: "Yamal", emoji: "🏃", left: "58%", delay: "0.15s" },
-    { name: "Dembélé 🦟", emoji: "🏃🏿", left: "76%", delay: "0.45s" },
+    { name: "Mbappé", flag: "🇫🇷", num: 10, head: "🧑🏾", jersey: "#1d4ed8", txt: "#fff", delay: "0s" },
+    { name: "Neymar", flag: "🇧🇷", num: 10, head: "🧑🏽", jersey: "#facc15", txt: "#1a1a1a", delay: "0.25s" },
+    { name: "Yamal", flag: "🇪🇸", num: 19, head: "🧑🏻", jersey: "#dc2626", txt: "#fff", delay: "0.1s" },
+    { name: "Dembélé", flag: "🦟", num: 11, head: "🧑🏿", jersey: "#1d4ed8", txt: "#fff", delay: "0.4s" },
+    { name: "Alexis", flag: "🇨🇱", num: 7, head: "🧑🏽", jersey: "#b91c1c", txt: "#fff", delay: "0.15s" },
   ];
   return (
-    <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-[6%] z-[7]">
-      {players.map((p, i) => (
-        <div key={i} className="absolute -translate-x-1/2 text-center" style={{ left: p.left }}>
-          <span className="block whitespace-nowrap rounded bg-black/40 px-1 text-[9px] font-bold text-white/80">
-            {p.name}
-          </span>
-          <span className="gz-kick mt-0.5 block text-2xl" style={{ animationDelay: p.delay }}>
-            {p.emoji}
-          </span>
-        </div>
-      ))}
-      {/* La pelota va rebotando entre ellos (parece que se la pasan) */}
-      <span className="gz-ball absolute bottom-0 text-lg">⚽</span>
+    <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-[7%] z-[7] h-44">
+      {/* Bolas de nieve cruzando de un lado a otro */}
+      <span className="gz-snowball gz-sbR" style={{ animationDelay: "0s" }} />
+      <span className="gz-snowball gz-sbL" style={{ animationDelay: "0.7s" }} />
+      <span className="gz-snowball gz-sbR" style={{ animationDelay: "1.4s" }} />
+      <span className="gz-snowball gz-sbL" style={{ animationDelay: "2.1s" }} />
+
+      {/* Jugadores */}
+      <div className="absolute inset-x-0 bottom-0 flex items-end justify-around px-1 sm:px-10">
+        {players.map((p, i) => (
+          <div key={i} className="gz-kick flex flex-col items-center" style={{ animationDelay: p.delay }}>
+            <span className="text-4xl leading-none drop-shadow-md sm:text-6xl">{p.head}</span>
+            <div
+              className="-mt-1 flex h-6 w-9 items-center justify-center rounded-b-md text-[11px] font-black shadow sm:h-8 sm:w-12 sm:text-sm"
+              style={{ background: p.jersey, color: p.txt }}
+            >
+              {p.num}
+            </div>
+            <span className="mt-1 whitespace-nowrap rounded bg-black/50 px-1.5 py-0.5 text-[10px] font-bold text-white sm:text-xs">
+              {p.flag} {p.name}
+            </span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -529,8 +552,11 @@ const CSS = `
 @keyframes gz-beam{0%,100%{transform:rotate(-14deg)}50%{transform:rotate(14deg)}}
 .gz-bob{animation:gz-bob 2.4s ease-in-out infinite;will-change:transform}
 @keyframes gz-bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
-.gz-kick{animation:gz-kick .5s ease-in-out infinite;will-change:transform}
-@keyframes gz-kick{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-4px) rotate(4deg)}}
-.gz-ball{animation:gz-ball 6s ease-in-out infinite;will-change:left,transform}
-@keyframes gz-ball{0%{left:16%;transform:translateY(0)}12%{transform:translateY(-18px)}25%{left:40%;transform:translateY(0)}37%{transform:translateY(-18px)}50%{left:58%;transform:translateY(0)}62%{transform:translateY(-18px)}75%{left:76%;transform:translateY(0)}87%{transform:translateY(-18px)}100%{left:16%;transform:translateY(0)}}
+.gz-kick{animation:gz-kick .7s ease-in-out infinite;will-change:transform}
+@keyframes gz-kick{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-5px) rotate(4deg)}}
+.gz-snowball{position:absolute;bottom:10px;left:6%;height:13px;width:13px;border-radius:9999px;background:radial-gradient(circle at 35% 30%,#fff,#c7d2fe);box-shadow:0 0 8px 2px rgba(255,255,255,.55)}
+.gz-sbR{animation:gz-sbR 2.8s ease-in-out infinite;will-change:left,bottom,transform}
+.gz-sbL{animation:gz-sbL 2.8s ease-in-out infinite;will-change:left,bottom,transform}
+@keyframes gz-sbR{0%{left:6%;bottom:12px;opacity:0;transform:rotate(0)}8%{opacity:1}50%{bottom:96px}92%{opacity:1}100%{left:90%;bottom:10px;opacity:0;transform:rotate(540deg)}}
+@keyframes gz-sbL{0%{left:90%;bottom:14px;opacity:0;transform:rotate(0)}8%{opacity:1}50%{bottom:88px}92%{opacity:1}100%{left:6%;bottom:12px;opacity:0;transform:rotate(-540deg)}}
 `;
