@@ -9,7 +9,10 @@ type Winner = { full_name: string | null; points_total: number };
  * Escena de "Los ganadores": fuegos artificiales + nieve (canvas), refugio y
  * montañas (SVG), helicóptero con foco, gente buscando con linternas y el
  * podio con los nombres reales. Todo animado en código (sin imágenes).
- * Las animaciones respetan `prefers-reduced-motion` vía globals.css.
+ *
+ * Rendimiento: los fuegos usan sprites de brillo pre-renderizados (nada de
+ * shadowBlur, que es carísimo por frame) y nada que vaya SOBRE el canvas usa
+ * backdrop-blur. Respeta `prefers-reduced-motion` (escena estática).
  */
 export default function Fiesta({ winners }: { winners: Winner[] }) {
   const [first, second, third] = winners;
@@ -27,10 +30,32 @@ export default function Fiesta({ winners }: { winners: Winner[] }) {
       "#f43f5e", "#fb7185", "#f59e0b", "#facc15", "#22d3ee",
       "#38bdf8", "#a855f7", "#c084fc", "#22c55e", "#ec4899",
     ];
-    const pick = () => colors[(Math.random() * colors.length) | 0];
 
-    type Rocket = { x: number; y: number; vx: number; vy: number; color: string; target: number };
-    type Part = { x: number; y: number; vx: number; vy: number; color: string; life: number; decay: number };
+    // Un sprite de brillo por color (radial: núcleo blanco -> color -> transparente).
+    // Dibujar con drawImage + composición "lighter" da el glow sin shadowBlur.
+    const spriteFor = (color: string) => {
+      const s = document.createElement("canvas");
+      s.width = 32;
+      s.height = 32;
+      const c = s.getContext("2d");
+      if (c) {
+        const g = c.createRadialGradient(16, 16, 0, 16, 16, 16);
+        g.addColorStop(0, "rgba(255,255,255,0.95)");
+        g.addColorStop(0.2, color);
+        g.addColorStop(1, "rgba(0,0,0,0)");
+        c.fillStyle = g;
+        c.beginPath();
+        c.arc(16, 16, 16, 0, 6.283);
+        c.fill();
+      }
+      return s;
+    };
+    const sprites = colors.map(spriteFor);
+    const pickSprite = () => sprites[(Math.random() * sprites.length) | 0];
+
+    type Sprite = HTMLCanvasElement;
+    type Rocket = { x: number; y: number; vx: number; vy: number; sprite: Sprite; target: number };
+    type Part = { x: number; y: number; vx: number; vy: number; sprite: Sprite; life: number; decay: number };
     type Flake = { x: number; y: number; vy: number; r: number; a: number; o: number };
     let rockets: Rocket[] = [];
     let parts: Part[] = [];
@@ -39,14 +64,14 @@ export default function Fiesta({ winners }: { winners: Winner[] }) {
     let H = 0;
 
     const resize = () => {
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
       const r = canvas.getBoundingClientRect();
       W = r.width;
       H = r.height;
       canvas.width = Math.max(1, Math.floor(W * dpr));
       canvas.height = Math.max(1, Math.floor(H * dpr));
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      flakes = Array.from({ length: 80 }, () => ({
+      flakes = Array.from({ length: 60 }, () => ({
         x: rand(0, W), y: rand(0, H), vy: rand(0.4, 1.4),
         r: rand(0.6, 2.2), a: rand(0.3, 0.9), o: rand(0, 6.28),
       }));
@@ -58,24 +83,22 @@ export default function Fiesta({ winners }: { winners: Winner[] }) {
       rockets.push({
         x: rand(W * 0.12, W * 0.88), y: H + 4,
         vx: rand(-0.5, 0.5), vy: -rand(6, 9.5),
-        color: pick(), target: rand(H * 0.1, H * 0.45),
+        sprite: pickSprite(), target: rand(H * 0.1, H * 0.45),
       });
     };
     const explode = (r: Rocket) => {
-      const n = 42 + ((Math.random() * 28) | 0);
+      const n = 34 + ((Math.random() * 24) | 0);
       for (let i = 0; i < n; i++) {
         const a = (Math.PI * 2 * i) / n;
         const sp = rand(1.4, 5.6);
         parts.push({
           x: r.x, y: r.y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp,
-          color: r.color, life: 1, decay: rand(0.008, 0.02),
+          sprite: r.sprite, life: 1, decay: rand(0.008, 0.02),
         });
       }
     };
 
-    // Modo reducido: dibuja una escena estática (nieve + unas explosiones) y listo.
-    if (reduce) {
-      ctx.clearRect(0, 0, W, H);
+    const drawSnow = () => {
       ctx.fillStyle = "#ffffff";
       for (const f of flakes) {
         ctx.globalAlpha = f.a;
@@ -84,25 +107,27 @@ export default function Fiesta({ winners }: { winners: Winner[] }) {
         ctx.fill();
       }
       ctx.globalAlpha = 1;
+    };
+
+    // Modo reducido: escena estática (nieve + unas explosiones) y listo.
+    if (reduce) {
+      ctx.clearRect(0, 0, W, H);
+      drawSnow();
+      ctx.save();
+      ctx.globalCompositeOperation = "lighter";
       for (let k = 0; k < 5; k++) {
         const cx = rand(W * 0.15, W * 0.85);
         const cy = rand(H * 0.15, H * 0.5);
-        const col = pick();
-        ctx.save();
-        ctx.globalCompositeOperation = "lighter";
-        for (let i = 0; i < 40; i++) {
-          const a = (Math.PI * 2 * i) / 40;
-          const d = rand(10, 60);
+        const sprite = pickSprite();
+        for (let i = 0; i < 34; i++) {
+          const a = (Math.PI * 2 * i) / 34;
+          const d = rand(12, 60);
           ctx.globalAlpha = rand(0.3, 0.9);
-          ctx.fillStyle = col;
-          ctx.shadowBlur = 6;
-          ctx.shadowColor = col;
-          ctx.beginPath();
-          ctx.arc(cx + Math.cos(a) * d, cy + Math.sin(a) * d, 2, 0, 6.283);
-          ctx.fill();
+          ctx.drawImage(sprite, cx + Math.cos(a) * d - 6, cy + Math.sin(a) * d - 6, 12, 12);
         }
-        ctx.restore();
       }
+      ctx.restore();
+      ctx.globalAlpha = 1;
       return () => window.removeEventListener("resize", resize);
     }
 
@@ -114,7 +139,6 @@ export default function Fiesta({ winners }: { winners: Winner[] }) {
       ctx.clearRect(0, 0, W, H);
 
       // Nieve
-      ctx.fillStyle = "#ffffff";
       for (const f of flakes) {
         f.y += f.vy;
         f.x += Math.sin(t / 1000 + f.o) * 0.3;
@@ -122,21 +146,17 @@ export default function Fiesta({ winners }: { winners: Winner[] }) {
           f.y = -3;
           f.x = rand(0, W);
         }
-        ctx.globalAlpha = f.a;
-        ctx.beginPath();
-        ctx.arc(f.x, f.y, f.r, 0, 6.283);
-        ctx.fill();
       }
-      ctx.globalAlpha = 1;
+      drawSnow();
 
-      // Lanzar cohetes cada ~620ms
+      // Lanzar cohetes cada ~680ms
       if (!last) last = t;
       acc += t - last;
       last = t;
-      if (acc > 620) {
+      if (acc > 680) {
         acc = 0;
         launch();
-        if (Math.random() < 0.45) launch();
+        if (Math.random() < 0.4) launch();
       }
 
       ctx.save();
@@ -146,12 +166,8 @@ export default function Fiesta({ winners }: { winners: Winner[] }) {
         r.x += r.vx;
         r.y += r.vy;
         r.vy += 0.08;
-        ctx.shadowBlur = 8;
-        ctx.shadowColor = r.color;
-        ctx.fillStyle = r.color;
-        ctx.beginPath();
-        ctx.arc(r.x, r.y, 2, 0, 6.283);
-        ctx.fill();
+        ctx.globalAlpha = 1;
+        ctx.drawImage(r.sprite, r.x - 5, r.y - 5, 10, 10);
         if (r.vy >= 0 || r.y <= r.target) {
           explode(r);
           rockets.splice(i, 1);
@@ -168,17 +184,12 @@ export default function Fiesta({ winners }: { winners: Winner[] }) {
           parts.splice(i, 1);
           continue;
         }
-        ctx.globalAlpha = Math.max(p.life, 0);
-        ctx.shadowBlur = 8;
-        ctx.shadowColor = p.color;
-        ctx.fillStyle = p.color;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, 2.2, 0, 6.283);
-        ctx.fill();
+        const sz = 14 * (0.35 + 0.65 * p.life);
+        ctx.globalAlpha = p.life;
+        ctx.drawImage(p.sprite, p.x - sz / 2, p.y - sz / 2, sz, sz);
       }
       ctx.restore();
       ctx.globalAlpha = 1;
-      ctx.shadowBlur = 0;
     };
     raf = requestAnimationFrame(frame);
 
@@ -210,6 +221,9 @@ export default function Fiesta({ winners }: { winners: Winner[] }) {
 
         {/* Gente buscando con linternas (guiño) */}
         <SearchParty />
+
+        {/* Jugadores pichangueando en la nieve */}
+        <PlayersOnSnow />
 
         {/* Helicóptero de rescate con foco */}
         <Heli />
@@ -317,12 +331,12 @@ function PodiumCol({
       {champion && <span className="mb-0.5 text-2xl">👑</span>}
       <span className="text-3xl sm:text-4xl">{medal}</span>
       <div
-        className={`mt-1 w-full rounded-lg border px-1 py-1.5 backdrop-blur-sm ${
-          champion ? "border-amber-300/70 bg-amber-400/15" : "border-white/20 bg-white/10"
+        className={`mt-1 w-full rounded-lg border px-1 py-1.5 ${
+          champion ? "border-amber-300/70 bg-amber-400/25" : "border-white/20 bg-white/15"
         }`}
       >
         <p className="truncate text-[13px] font-black sm:text-sm">{w?.full_name ?? "—"}</p>
-        <p className={`text-[11px] font-bold ${champion ? "text-amber-300" : "text-white/70"}`}>
+        <p className={`text-[11px] font-bold ${champion ? "text-amber-200" : "text-white/70"}`}>
           {w ? `${w.points_total} pts` : ""}
         </p>
       </div>
@@ -349,7 +363,7 @@ function Award({
   text: string;
 }) {
   return (
-    <div className={`rounded-xl border bg-gradient-to-br p-4 backdrop-blur-sm ${grad}`}>
+    <div className={`rounded-xl border bg-gradient-to-br p-4 ${grad}`}>
       <p className="text-2xl">{emoji}</p>
       <p className="mt-1 font-black text-white">{title}</p>
       <p className="mt-0.5 text-sm text-white/80">{text}</p>
@@ -399,6 +413,31 @@ function Heli() {
           🚁
         </span>
       </div>
+    </div>
+  );
+}
+
+function PlayersOnSnow() {
+  const players = [
+    { name: "Mbappé", emoji: "🏃🏾", left: "16%", delay: "0s" },
+    { name: "Neymar", emoji: "🤸🏽", left: "40%", delay: "0.3s" },
+    { name: "Yamal", emoji: "🏃", left: "58%", delay: "0.15s" },
+    { name: "Dembélé 🦟", emoji: "🏃🏿", left: "76%", delay: "0.45s" },
+  ];
+  return (
+    <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-[6%] z-[7]">
+      {players.map((p, i) => (
+        <div key={i} className="absolute -translate-x-1/2 text-center" style={{ left: p.left }}>
+          <span className="block whitespace-nowrap rounded bg-black/40 px-1 text-[9px] font-bold text-white/80">
+            {p.name}
+          </span>
+          <span className="gz-kick mt-0.5 block text-2xl" style={{ animationDelay: p.delay }}>
+            {p.emoji}
+          </span>
+        </div>
+      ))}
+      {/* La pelota va rebotando entre ellos (parece que se la pasan) */}
+      <span className="gz-ball absolute bottom-0 text-lg">⚽</span>
     </div>
   );
 }
@@ -482,12 +521,16 @@ const CSS = `
 @keyframes gz-rise{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
 .gz-pop{opacity:0;animation:gz-pop .7s cubic-bezier(.2,.8,.2,1) forwards}
 @keyframes gz-pop{from{opacity:0;transform:translateY(28px) scale(.92)}to{opacity:1;transform:none}}
-.gz-float{animation:gz-float 3s ease-in-out infinite}
+.gz-float{animation:gz-float 3s ease-in-out infinite;will-change:transform}
 @keyframes gz-float{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-7px) rotate(4deg)}}
-.gz-heli{animation:gz-heli 16s linear infinite}
+.gz-heli{animation:gz-heli 16s linear infinite;will-change:transform}
 @keyframes gz-heli{from{transform:translateX(105vw)}to{transform:translateX(-25vw)}}
-.gz-beam{animation:gz-beam 3.2s ease-in-out infinite}
+.gz-beam{animation:gz-beam 3.2s ease-in-out infinite;will-change:transform}
 @keyframes gz-beam{0%,100%{transform:rotate(-14deg)}50%{transform:rotate(14deg)}}
-.gz-bob{animation:gz-bob 2.4s ease-in-out infinite}
+.gz-bob{animation:gz-bob 2.4s ease-in-out infinite;will-change:transform}
 @keyframes gz-bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+.gz-kick{animation:gz-kick .5s ease-in-out infinite;will-change:transform}
+@keyframes gz-kick{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-4px) rotate(4deg)}}
+.gz-ball{animation:gz-ball 6s ease-in-out infinite;will-change:left,transform}
+@keyframes gz-ball{0%{left:16%;transform:translateY(0)}12%{transform:translateY(-18px)}25%{left:40%;transform:translateY(0)}37%{transform:translateY(-18px)}50%{left:58%;transform:translateY(0)}62%{transform:translateY(-18px)}75%{left:76%;transform:translateY(0)}87%{transform:translateY(-18px)}100%{left:16%;transform:translateY(0)}}
 `;
